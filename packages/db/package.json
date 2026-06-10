@@ -13,9 +13,11 @@
     "db": "pnpm dotenvx run -f ../env/.env -- drizzle-kit",
     "db:dev:start": "docker compose -f docker-compose.dev.yaml up -d",
     "db:dev:stop": "docker compose -f docker-compose.dev.yaml stop",
-    "auth:generate": "vp run -w auth:generate"
+    "auth:generate": "vp run -w auth:generate",
+    "test:unit": "vp test"
   },
   "dependencies": {
+    "@tsu-stack/core": "workspace:*",
     "@tsu-stack/logger": "workspace:*",
     "drizzle-orm": "catalog:",
     "postgres": "catalog:"
