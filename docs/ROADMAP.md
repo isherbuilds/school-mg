@@ -17,7 +17,7 @@ Goal: make the new repo safe for phased migration from `school-manager-monorepo`
 
 ## MVP: Staff Academic Operations
 
-Status: planned.
+Status: active.
 
 Goal: principal can set up the school, create students and guardians, assign teachers, publish a manual timetable, and teachers can mark daily section attendance.
 
@@ -26,6 +26,7 @@ Scope:
 - Auth organization baseline.
 - Access roles: owner, principal, teacher.
 - Assignment roles: coordinator, homeroom teacher, subject teacher, substitute teacher.
+- School setup API contracts and protected oRPC router for academic years, grade levels, sections, and subjects.
 - Staff actors and profiles.
 - Grade levels, sections, subjects, academic years, and terms.
 - Students, guardians, and student relationships.
