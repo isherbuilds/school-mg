@@ -104,7 +104,19 @@ export const transportRouteStops = pgTable(
       foreignColumns: [transportStops.organizationId, transportStops.id],
       name: "transport_route_stops_stop_org_fk"
     }).onDelete("cascade"),
-    check("transport_route_stops_order_positive_chk", sql`${table.stopOrder} > 0`)
+    check("transport_route_stops_order_positive_chk", sql`${table.stopOrder} > 0`),
+    check(
+      "transport_route_stops_pickup_minute_bounds_chk",
+      sql`${table.pickupMinute} IS NULL OR (${table.pickupMinute} >= 0 AND ${table.pickupMinute} <= 1440)`
+    ),
+    check(
+      "transport_route_stops_dropoff_minute_bounds_chk",
+      sql`${table.dropoffMinute} IS NULL OR (${table.dropoffMinute} >= 0 AND ${table.dropoffMinute} <= 1440)`
+    ),
+    check(
+      "transport_route_stops_distance_non_negative_chk",
+      sql`${table.distanceFromStartKm} IS NULL OR ${table.distanceFromStartKm} >= 0`
+    )
   ]
 );
 

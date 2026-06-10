@@ -60,12 +60,7 @@ This example is conceptual unless the current runtime exposes an MCP elicitation
       "properties": {
         "choice": {
           "type": "string",
-          "enum": [
-            "run_full_check",
-            "skip_validation",
-            "review_markdown_only",
-            "custom"
-          ],
+          "enum": ["run_full_check", "skip_validation", "review_markdown_only", "custom"],
           "description": "How should the agent proceed?"
         },
         "customInstructions": {

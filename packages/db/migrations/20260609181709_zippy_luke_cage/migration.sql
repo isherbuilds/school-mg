@@ -332,7 +332,10 @@ CREATE TABLE "transport_route_stops" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "transport_route_stops_pk" PRIMARY KEY("route_id","stop_id"),
-	CONSTRAINT "transport_route_stops_order_positive_chk" CHECK ("stop_order" > 0)
+	CONSTRAINT "transport_route_stops_order_positive_chk" CHECK ("stop_order" > 0),
+	CONSTRAINT "transport_route_stops_pickup_minute_bounds_chk" CHECK ("pickup_minute" IS NULL OR ("pickup_minute" >= 0 AND "pickup_minute" <= 1440)),
+	CONSTRAINT "transport_route_stops_dropoff_minute_bounds_chk" CHECK ("dropoff_minute" IS NULL OR ("dropoff_minute" >= 0 AND "dropoff_minute" <= 1440)),
+	CONSTRAINT "transport_route_stops_distance_non_negative_chk" CHECK ("distance_from_start_km" IS NULL OR "distance_from_start_km" >= 0)
 );
 --> statement-breakpoint
 CREATE TABLE "transport_routes" (

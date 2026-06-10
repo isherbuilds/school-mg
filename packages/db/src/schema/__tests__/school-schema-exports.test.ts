@@ -113,6 +113,14 @@ describe("school schema exports", () => {
     expect(migration).toContain("timetable_slots_subject_offering_scope_fk");
   });
 
+  it("bounds transport route stop minutes and distance", () => {
+    const migration = readAcademicMvpMigration();
+
+    expect(migration).toContain("transport_route_stops_pickup_minute_bounds_chk");
+    expect(migration).toContain("transport_route_stops_dropoff_minute_bounds_chk");
+    expect(migration).toContain("transport_route_stops_distance_non_negative_chk");
+  });
+
   it("allows only one current academic year per organization", () => {
     const migration = readAcademicMvpMigration();
 
