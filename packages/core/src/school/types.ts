@@ -66,3 +66,186 @@ export type TransportRouteWindow = z.infer<typeof transportRouteWindowSchema>;
 
 export const transportRideStatusSchema = z.enum(transportRideStatuses);
 export type TransportRideStatus = z.infer<typeof transportRideStatusSchema>;
+
+const uuidSchema = z.uuid();
+const nonEmptyTextSchema = z.string().trim().min(1);
+const isoDateSchema = z.iso.date();
+
+function hasUpdateFields(input: Record<string, unknown>): boolean {
+  return Object.keys(input).some((key) => key !== "id" && input[key] !== undefined);
+}
+
+export const schoolIdInputSchema = z.object({
+  id: uuidSchema
+});
+export type SchoolIdInput = z.infer<typeof schoolIdInputSchema>;
+
+export const academicYearSchema = z.object({
+  createdAt: z.iso.datetime(),
+  endDate: isoDateSchema,
+  id: uuidSchema,
+  isCurrent: z.boolean(),
+  name: nonEmptyTextSchema,
+  startDate: isoDateSchema,
+  updatedAt: z.iso.datetime()
+});
+export type AcademicYear = z.infer<typeof academicYearSchema>;
+
+const academicYearInputBaseSchema = z.object({
+  endDate: isoDateSchema,
+  isCurrent: z.boolean(),
+  name: nonEmptyTextSchema.max(120),
+  startDate: isoDateSchema
+});
+
+export const academicYearCreateInputSchema = academicYearInputBaseSchema
+  .extend({
+    isCurrent: z.boolean().default(false)
+  })
+  .refine((input) => input.startDate <= input.endDate, {
+    message: "Start date must be before or equal to end date.",
+    path: ["endDate"]
+  });
+export type AcademicYearCreateInput = z.infer<typeof academicYearCreateInputSchema>;
+
+export const academicYearUpdateInputSchema = academicYearInputBaseSchema
+  .partial()
+  .extend({
+    id: uuidSchema
+  })
+  .refine(hasUpdateFields, {
+    message: "At least one field must be provided.",
+    path: ["id"]
+  })
+  .refine(
+    (input) =>
+      input.startDate === undefined ||
+      input.endDate === undefined ||
+      input.startDate <= input.endDate,
+    {
+      message: "Start date must be before or equal to end date.",
+      path: ["endDate"]
+    }
+  )
+  .refine((input) => (input.startDate === undefined) === (input.endDate === undefined), {
+    message: "Start date and end date must be updated together.",
+    path: ["endDate"]
+  });
+export type AcademicYearUpdateInput = z.infer<typeof academicYearUpdateInputSchema>;
+
+export const gradeLevelSchema = z.object({
+  code: nonEmptyTextSchema,
+  createdAt: z.iso.datetime(),
+  id: uuidSchema,
+  name: nonEmptyTextSchema,
+  sortOrder: z.number().int(),
+  updatedAt: z.iso.datetime()
+});
+export type GradeLevel = z.infer<typeof gradeLevelSchema>;
+
+const gradeLevelInputBaseSchema = z.object({
+  code: nonEmptyTextSchema.max(40),
+  name: nonEmptyTextSchema.max(120),
+  sortOrder: z.number().int().min(0)
+});
+
+export const gradeLevelCreateInputSchema = gradeLevelInputBaseSchema.extend({
+  sortOrder: z.number().int().min(0).default(0)
+});
+export type GradeLevelCreateInput = z.infer<typeof gradeLevelCreateInputSchema>;
+
+export const gradeLevelUpdateInputSchema = gradeLevelInputBaseSchema
+  .partial()
+  .extend({
+    id: uuidSchema
+  })
+  .refine(hasUpdateFields, {
+    message: "At least one field must be provided.",
+    path: ["id"]
+  });
+export type GradeLevelUpdateInput = z.infer<typeof gradeLevelUpdateInputSchema>;
+
+export const subjectSchema = z.object({
+  code: nonEmptyTextSchema,
+  createdAt: z.iso.datetime(),
+  id: uuidSchema,
+  isCore: z.boolean(),
+  name: nonEmptyTextSchema,
+  shortName: z.string().nullable(),
+  updatedAt: z.iso.datetime()
+});
+export type Subject = z.infer<typeof subjectSchema>;
+
+const subjectInputBaseSchema = z.object({
+  code: nonEmptyTextSchema.max(40),
+  isCore: z.boolean(),
+  name: nonEmptyTextSchema.max(120),
+  shortName: nonEmptyTextSchema.max(40).nullable().optional()
+});
+
+export const subjectCreateInputSchema = subjectInputBaseSchema.extend({
+  isCore: z.boolean().default(true)
+});
+export type SubjectCreateInput = z.infer<typeof subjectCreateInputSchema>;
+
+export const subjectUpdateInputSchema = subjectInputBaseSchema
+  .partial()
+  .extend({
+    id: uuidSchema
+  })
+  .refine(hasUpdateFields, {
+    message: "At least one field must be provided.",
+    path: ["id"]
+  });
+export type SubjectUpdateInput = z.infer<typeof subjectUpdateInputSchema>;
+
+export const sectionSchema = z.object({
+  academicYearId: uuidSchema,
+  capacity: z.number().int().min(0).nullable(),
+  code: nonEmptyTextSchema,
+  createdAt: z.iso.datetime(),
+  gradeLevelId: uuidSchema,
+  id: uuidSchema,
+  name: nonEmptyTextSchema,
+  shift: schoolShiftSchema,
+  updatedAt: z.iso.datetime()
+});
+export type Section = z.infer<typeof sectionSchema>;
+
+const sectionInputBaseSchema = z.object({
+  academicYearId: uuidSchema,
+  capacity: z.number().int().min(0).nullable().optional(),
+  code: nonEmptyTextSchema.max(40),
+  gradeLevelId: uuidSchema,
+  name: nonEmptyTextSchema.max(120),
+  shift: schoolShiftSchema
+});
+
+export const sectionCreateInputSchema = sectionInputBaseSchema.extend({
+  shift: schoolShiftSchema.default("full_day")
+});
+export type SectionCreateInput = z.infer<typeof sectionCreateInputSchema>;
+
+export const sectionUpdateInputSchema = sectionInputBaseSchema
+  .partial()
+  .extend({
+    id: uuidSchema
+  })
+  .refine(hasUpdateFields, {
+    message: "At least one field must be provided.",
+    path: ["id"]
+  });
+export type SectionUpdateInput = z.infer<typeof sectionUpdateInputSchema>;
+
+export const schoolSetupListInputSchema = z.object({
+  academicYearId: uuidSchema.optional()
+});
+export type SchoolSetupListInput = z.infer<typeof schoolSetupListInputSchema>;
+
+export const schoolSetupListOutputSchema = z.object({
+  academicYears: z.array(academicYearSchema),
+  gradeLevels: z.array(gradeLevelSchema),
+  sections: z.array(sectionSchema),
+  subjects: z.array(subjectSchema)
+});
+export type SchoolSetupListOutput = z.infer<typeof schoolSetupListOutputSchema>;

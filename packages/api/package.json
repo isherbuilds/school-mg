@@ -9,6 +9,9 @@
       "default": "./src/*.ts"
     }
   },
+  "scripts": {
+    "test:unit": "vp test"
+  },
   "dependencies": {
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
