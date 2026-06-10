@@ -1,33 +1,19 @@
 <h1 align="center">
-    <img width="120" height="120" src="https://github.com/tsu-moe/tsu-stack/blob/main/apps/web/public/logo192.png?raw=true" alt="tsu!stack Logo"><br>
-    <a href="https://tsu-stack.tsu.moe/">tsu!stack</a>
+    school-mg
 </h1>
 
 <p align="center">
    <img src="https://img.shields.io/badge/NodeJS-25.8.2-green" alt="NodeJS version badge">
-   <img src="https://img.shields.io/github/license/tsu-moe/tsu-stack" alt="License badge">
-   <img src="https://img.shields.io/github/last-commit/tsu-moe/tsu-stack" alt="Last commit badge">
-   <img src="https://img.shields.io/github/stars/tsu-moe/tsu-stack?style=flat" alt="GitHub stars badge">
-   <img src="https://img.shields.io/github/forks/tsu-moe/tsu-stack?style=flat" alt="GitHub forks badge">
-   <img src="https://img.shields.io/github/issues/tsu-moe/tsu-stack" alt="GitHub issues badge">
-   <img src="https://img.shields.io/github/issues-pr/tsu-moe/tsu-stack" alt="GitHub pull requests badge">
-   <img src="https://komarev.com/ghpvc/?username=tsu-moe-tsu-stack&label=views&color=blue&style=flat" alt="Repo views badge">
+   <img src="https://img.shields.io/badge/License-AGPL--3.0-blue" alt="License badge">
+   <img src="https://img.shields.io/github/last-commit/isherbuilds/school-mg" alt="Last commit badge">
+   <img src="https://img.shields.io/github/stars/isherbuilds/school-mg?style=flat" alt="GitHub stars badge">
+   <img src="https://img.shields.io/github/forks/isherbuilds/school-mg?style=flat" alt="GitHub forks badge">
+   <img src="https://img.shields.io/github/issues/isherbuilds/school-mg" alt="GitHub issues badge">
+   <img src="https://img.shields.io/github/issues-pr/isherbuilds/school-mg" alt="GitHub pull requests badge">
 </p>
 
 <p align="center">
-  Vite Plus (Vite+) TanStack Start monorepo with shadcn/ui, Paraglide.js (i18n), Hono, oRPC, drizzle-orm, better-auth, Feature-Sliced Design (FSD), and more. 🐋 Dockerized and opinionated. Compatible with the ⛅ Cloudflare Workers workerd runtime with a few tweaks.
-</p>
-
-<p align="center">
-  <img src="https://github.com/tsu-moe/tsu-stack/blob/main/apps/web/public/og/index.png?raw=true" alt="tsu!stack Screenshot" width="800" height="420">
-</p>
-
-<p align="center">
-  <strong>✨ Live Demo Deployments ✨</strong><br />
-  <a href="http://tsu-stack.tsu.moe" target="_blank">Dockerfile (Coolify)</a><br>
-  <a href="http://tsu-stack-coolify.tsu.moe" target="_blank">Docker Compose (Coolify)</a><br>
-  <a href="http://tsu-stack-merged.tsu.moe" target="_blank">Merged Web + Server with Dockerfile (Coolify)</a> | <a href="https://github.com/tsu-moe/tsu-stack/tree/variant/merged" target="_blank">see branch</a><br>
-  <a href="https://tsu-stack.tsu-moe.workers.dev" target="_blank">Merged Web + Server (Cloudflare Workers)</a> | <a href="https://github.com/tsu-moe/tsu-stack/tree/variant/merged-cloudflare" target="_blank">see branch</a>
+  Open-source school management platform built on TanStack Start + Hono + oRPC + Drizzle + Better Auth + Paraglide.js (i18n), powered by Vite Plus. Dockerized and opinionated.
 </p>
 
 ## Table of Contents
@@ -93,10 +79,8 @@ Here is a non-exhaustive list of the main technologies used in this project, alo
 1. **Clone the repository and install dependencies:**
 
    ```bash
-   vpx tiged https://github.com/tsu-moe/tsu-stack#main my-tsu-stack-app
-   # Available branch specifiers: `main` | `variant/merged` | `variant/merged-cloudflare`
-
-   cd my-tsu-stack-app
+   git clone https://github.com/isherbuilds/school-mg
+   cd school-mg
    vp env install    # install Node.js version specified in package.json
    vp install        # install all packages in the monorepo
    ```
@@ -181,7 +165,7 @@ Finally, set any required [environment variables](#environment-variables) in the
 
 #### Option 2: Docker Compose
 
-1. When creating a new application in Coolify, select "Private Repository (with GitHub App)" and select your repository with your tsu-stack app.
+1. When creating a new application in Coolify, select "Private Repository (with GitHub App)" and select your school-mg repository.
 2. Next, change the "Build Pack" to "Docker Compose" and set the "Docker Compose Location" to `/docker-compose.coolify.yaml`.
 3. Refer to [Server Deployment](#server-deployment) and [Web Deployment](#web-deployment) sections above for domain configurations.
 
@@ -397,10 +381,8 @@ You can support the project by giving it a star, sharing it with your friends, c
 
 ## Acknowledgements
 
-This repository builds on [mugnavo/tanstarter-plus](https://github.com/mugnavo/tanstarter-plus).
-
-- It will continue to be a reference for new dependency features.
+This repository is a domain-specific fork of [tsu-stack](https://github.com/tsu-moe/tsu-stack), which builds on [mugnavo/tanstarter-plus](https://github.com/mugnavo/tanstarter-plus).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+This project is free software licensed under the GNU Affero General Public License v3.0 - see the [LICENSE](../LICENSE) file for details.

@@ -1,6 +1,6 @@
 {
-  "name": "tsu-stack",
-  "private": true,
+  "name": "school-mg",
+  "private": false,
   "type": "module",
   "scripts": {
     "check": "vp check",

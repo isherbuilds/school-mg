@@ -1,4 +1,4 @@
-# tsu!stack Project
+# school-mg Project
 
 An opinionated Vite+ monorepo. It uses `vp` (Vite+ CLI) to run scripts across packages, and `vpx` to run package binaries without installing them. You can run `vp run -w` to run a command in the workspace root `package.json` context.
 

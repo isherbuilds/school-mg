@@ -1,6 +1,6 @@
-# School App
+# school-mg
 
-School App context defines school operations language for the MVP migration.
+school-mg context defines school operations language for the MVP migration.
 
 ## Language
 
