@@ -30,12 +30,14 @@ import {
   getRequiredString
 } from "@/shared/lib/form-values";
 
+import { useCreateAcademicTermMutation } from "@/pages/school-setup/api/create-academic-term.mutation";
 import { useCreateAcademicYearMutation } from "@/pages/school-setup/api/create-academic-year.mutation";
 import { useCreateGradeLevelMutation } from "@/pages/school-setup/api/create-grade-level.mutation";
 import { useCreateSectionMutation } from "@/pages/school-setup/api/create-section.mutation";
 import { useCreateSubjectMutation } from "@/pages/school-setup/api/create-subject.mutation";
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { getSchoolSetupErrorMessage } from "@/pages/school-setup/lib/errors";
+import { getAcademicTermKindOptions } from "@/pages/school-setup/ui/academic-term-kind-options";
 import { NativeSelect } from "@/pages/school-setup/ui/native-select";
 
 function SubmitButton({ children, isPending }: { children: string; isPending: boolean }) {
@@ -49,10 +51,13 @@ function SubmitButton({ children, isPending }: { children: string; isPending: bo
 
 export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
   const academicYearMutation = useCreateAcademicYearMutation();
+  const academicTermMutation = useCreateAcademicTermMutation();
   const gradeLevelMutation = useCreateGradeLevelMutation();
   const subjectMutation = useCreateSubjectMutation();
   const sectionMutation = useCreateSectionMutation();
 
+  const termKindOptions = getAcademicTermKindOptions(m);
+  const canCreateTerm = setup.academicYears.length > 0;
   const canCreateSection = setup.academicYears.length > 0 && setup.gradeLevels.length > 0;
 
   const handleAcademicYearSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -69,6 +74,27 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       });
       form.reset();
       toast.success(m.school_setup_page__academic_year_saved());
+    } catch (error) {
+      toast.error(getSchoolSetupErrorMessage(error));
+    }
+  };
+
+  const handleAcademicTermSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      await academicTermMutation.mutateAsync({
+        academicYearId: getRequiredString(formData, "academicYearId"),
+        endDate: getRequiredString(formData, "endDate"),
+        kind: getRequiredString(formData, "kind") as (typeof termKindOptions)[number]["kind"],
+        name: getRequiredString(formData, "name"),
+        sortOrder: getRequiredNumber(formData, "sortOrder"),
+        startDate: getRequiredString(formData, "startDate")
+      });
+      form.reset();
+      toast.success(m.school_setup_page__academic_term_saved());
     } catch (error) {
       toast.error(getSchoolSetupErrorMessage(error));
     }
@@ -196,6 +222,101 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
               </Field>
               <SubmitButton isPending={academicYearMutation.isPending}>
                 {m.school_setup_page__add_academic_year()}
+              </SubmitButton>
+            </FieldGroup>
+          </FieldSet>
+        </form>
+
+        <form onSubmit={handleAcademicTermSubmit}>
+          <FieldSet disabled={!canCreateTerm}>
+            <FieldGroup className="gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldContent>
+                    <FieldLabel htmlFor="academic-term-year">
+                      {m.school_setup_page__academic_year()}
+                    </FieldLabel>
+                  </FieldContent>
+                  <NativeSelect id="academic-term-year" name="academicYearId" required>
+                    <option value="">{m.school_setup_page__select_academic_year()}</option>
+                    {setup.academicYears.map((year) => (
+                      <option key={year.id} value={year.id}>
+                        {year.name}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+                <Field>
+                  <FieldContent>
+                    <FieldLabel htmlFor="academic-term-kind">
+                      {m.school_setup_page__term_kind()}
+                    </FieldLabel>
+                  </FieldContent>
+                  <NativeSelect defaultValue="custom" id="academic-term-kind" name="kind">
+                    {termKindOptions.map((option) => (
+                      <option key={option.kind} value={option.kind}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_96px]">
+                <Field>
+                  <FieldContent>
+                    <FieldLabel htmlFor="academic-term-name">
+                      {m.school_setup_page__academic_term_name()}
+                    </FieldLabel>
+                  </FieldContent>
+                  <Input
+                    id="academic-term-name"
+                    name="name"
+                    required
+                    placeholder={m.school_setup_page__academic_term_name_placeholder()}
+                  />
+                </Field>
+                <Field>
+                  <FieldContent>
+                    <FieldLabel htmlFor="academic-term-sort-order">
+                      {m.school_setup_page__order()}
+                    </FieldLabel>
+                  </FieldContent>
+                  <Input
+                    defaultValue="0"
+                    id="academic-term-sort-order"
+                    min="0"
+                    name="sortOrder"
+                    required
+                    step="1"
+                    type="number"
+                  />
+                </Field>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldContent>
+                    <FieldLabel htmlFor="academic-term-start-date">
+                      {m.school_setup_page__start_date()}
+                    </FieldLabel>
+                  </FieldContent>
+                  <Input id="academic-term-start-date" name="startDate" required type="date" />
+                </Field>
+                <Field>
+                  <FieldContent>
+                    <FieldLabel htmlFor="academic-term-end-date">
+                      {m.school_setup_page__end_date()}
+                    </FieldLabel>
+                  </FieldContent>
+                  <Input id="academic-term-end-date" name="endDate" required type="date" />
+                </Field>
+              </div>
+              {!canCreateTerm && (
+                <FieldDescription>
+                  {m.school_setup_page__academic_term_dependencies_description()}
+                </FieldDescription>
+              )}
+              <SubmitButton isPending={academicTermMutation.isPending}>
+                {m.school_setup_page__add_academic_term()}
               </SubmitButton>
             </FieldGroup>
           </FieldSet>

@@ -1,4 +1,7 @@
 import {
+  type AcademicTerm,
+  type AcademicTermCreateInput,
+  type AcademicTermUpdateInput,
   type AcademicYear,
   type AcademicYearCreateInput,
   type AcademicYearUpdateInput,
@@ -16,6 +19,7 @@ import {
 } from "@tsu-stack/core/school";
 import { and, asc, db, eq, inArray, ne } from "@tsu-stack/db";
 import {
+  academicTerms,
   academicYears,
   gradeLevels,
   member,
@@ -25,6 +29,12 @@ import {
   sections,
   subjects
 } from "@tsu-stack/db/schema";
+
+import {
+  AcademicTermDateRangeError,
+  isAcademicTermDateRangeInsideAcademicYear,
+  SchoolSetupReferenceError
+} from "./utils";
 
 function timestampToIso(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
@@ -40,6 +50,58 @@ function academicYearToOutput(row: typeof academicYears.$inferSelect): AcademicY
     startDate: row.startDate,
     updatedAt: timestampToIso(row.updatedAt)
   };
+}
+
+function academicTermToOutput(row: typeof academicTerms.$inferSelect): AcademicTerm {
+  return {
+    academicYearId: row.academicYearId,
+    createdAt: timestampToIso(row.createdAt),
+    endDate: row.endDate,
+    id: row.id,
+    kind: row.kind,
+    name: row.name,
+    sortOrder: row.sortOrder,
+    startDate: row.startDate,
+    updatedAt: timestampToIso(row.updatedAt)
+  };
+}
+
+function shouldValidateAcademicTermRange(input: AcademicTermUpdateInput): boolean {
+  return (
+    input.academicYearId !== undefined ||
+    input.startDate !== undefined ||
+    input.endDate !== undefined
+  );
+}
+
+async function getAcademicYearDateRange(organizationId: string, academicYearId: string) {
+  const [academicYear] = await db
+    .select({
+      endDate: academicYears.endDate,
+      startDate: academicYears.startDate
+    })
+    .from(academicYears)
+    .where(
+      and(eq(academicYears.organizationId, organizationId), eq(academicYears.id, academicYearId))
+    )
+    .limit(1);
+
+  if (!academicYear) {
+    throw new SchoolSetupReferenceError();
+  }
+
+  return academicYear;
+}
+
+async function assertAcademicTermInsideAcademicYear(
+  organizationId: string,
+  input: Pick<AcademicTermCreateInput, "academicYearId" | "endDate" | "startDate">
+) {
+  const academicYear = await getAcademicYearDateRange(organizationId, input.academicYearId);
+
+  if (!isAcademicTermDateRangeInsideAcademicYear(input, academicYear)) {
+    throw new AcademicTermDateRangeError();
+  }
 }
 
 function gradeLevelToOutput(row: typeof gradeLevels.$inferSelect): GradeLevel {
@@ -133,12 +195,24 @@ export async function listSchoolSetup(
   organizationId: string,
   input: SchoolSetupListInput
 ): Promise<Omit<SchoolSetupListOutput, "canManageSetup">> {
-  const [yearRows, gradeRows, subjectRows, sectionRows] = await Promise.all([
+  const [yearRows, termRows, gradeRows, subjectRows, sectionRows] = await Promise.all([
     db
       .select()
       .from(academicYears)
       .where(eq(academicYears.organizationId, organizationId))
       .orderBy(asc(academicYears.startDate), asc(academicYears.name)),
+    db
+      .select()
+      .from(academicTerms)
+      .where(
+        and(
+          eq(academicTerms.organizationId, organizationId),
+          input.academicYearId === undefined
+            ? undefined
+            : eq(academicTerms.academicYearId, input.academicYearId)
+        )
+      )
+      .orderBy(asc(academicTerms.sortOrder), asc(academicTerms.startDate), asc(academicTerms.name)),
     db
       .select()
       .from(gradeLevels)
@@ -164,11 +238,94 @@ export async function listSchoolSetup(
   ]);
 
   return {
+    academicTerms: termRows.map(academicTermToOutput),
     academicYears: yearRows.map(academicYearToOutput),
     gradeLevels: gradeRows.map(gradeLevelToOutput),
     sections: sectionRows.map(sectionToOutput),
     subjects: subjectRows.map(subjectToOutput)
   };
+}
+
+export async function createAcademicTerm(
+  organizationId: string,
+  input: AcademicTermCreateInput
+): Promise<AcademicTerm> {
+  await assertAcademicTermInsideAcademicYear(organizationId, input);
+
+  const [row] = await db
+    .insert(academicTerms)
+    .values({ ...input, organizationId })
+    .returning();
+
+  return academicTermToOutput(row);
+}
+
+export async function updateAcademicTerm(
+  organizationId: string,
+  input: AcademicTermUpdateInput
+): Promise<AcademicTerm | null> {
+  const { id, ...values } = input;
+
+  if (shouldValidateAcademicTermRange(input)) {
+    return db.transaction(async (tx) => {
+      const [existing] = await tx
+        .select({
+          academicYearId: academicTerms.academicYearId,
+          endDate: academicTerms.endDate,
+          startDate: academicTerms.startDate
+        })
+        .from(academicTerms)
+        .where(and(eq(academicTerms.organizationId, organizationId), eq(academicTerms.id, id)))
+        .limit(1);
+
+      if (!existing) {
+        return null;
+      }
+
+      const nextTerm = {
+        academicYearId: input.academicYearId ?? existing.academicYearId,
+        endDate: input.endDate ?? existing.endDate,
+        startDate: input.startDate ?? existing.startDate
+      };
+      const [academicYear] = await tx
+        .select({
+          endDate: academicYears.endDate,
+          startDate: academicYears.startDate
+        })
+        .from(academicYears)
+        .where(
+          and(
+            eq(academicYears.organizationId, organizationId),
+            eq(academicYears.id, nextTerm.academicYearId)
+          )
+        )
+        .limit(1);
+
+      if (!academicYear) {
+        throw new SchoolSetupReferenceError();
+      }
+
+      if (!isAcademicTermDateRangeInsideAcademicYear(nextTerm, academicYear)) {
+        throw new AcademicTermDateRangeError();
+      }
+
+      const [row] = await tx
+        .update(academicTerms)
+        .set(values)
+        .where(and(eq(academicTerms.organizationId, organizationId), eq(academicTerms.id, id)))
+        .returning();
+
+      return row ? academicTermToOutput(row) : null;
+    });
+  }
+
+  const [row] = await db
+    .update(academicTerms)
+    .set(values)
+    .where(and(eq(academicTerms.organizationId, organizationId), eq(academicTerms.id, id)))
+    .returning();
+
+  return row ? academicTermToOutput(row) : null;
 }
 
 export async function createAcademicYear(

@@ -1,4 +1,7 @@
 import {
+  academicTermCreateInputSchema,
+  academicTermSchema,
+  academicTermUpdateInputSchema,
   academicYearCreateInputSchema,
   academicYearSchema,
   academicYearUpdateInputSchema,
@@ -19,6 +22,7 @@ import { type OrpcContext } from "#@/lib/context/types";
 import { protectedProcedure } from "#@/lib/procedures/factory";
 
 import {
+  createAcademicTerm,
   createAcademicYear,
   createGradeLevel,
   createSection,
@@ -27,11 +31,13 @@ import {
   isOrganizationMember,
   isSchoolSetupManager,
   listSchoolSetup,
+  updateAcademicTerm,
   updateAcademicYear,
   updateGradeLevel,
   updateSection,
   updateSubject
 } from "./queries";
+import { AcademicTermDateRangeError, SchoolSetupReferenceError } from "./utils";
 
 const schoolSetupProcedure = protectedProcedure.errors({
   ACTIVE_ORGANIZATION_REQUIRED: {
@@ -115,10 +121,18 @@ function hasDatabaseCode(error: unknown, code: string): boolean {
   return "cause" in error && hasDatabaseCode(error.cause, code);
 }
 
-async function mapDatabaseError<T>(action: () => Promise<T>, errors: SchoolSetupErrors) {
+async function mapSchoolSetupWriteError<T>(action: () => Promise<T>, errors: SchoolSetupErrors) {
   try {
     return await action();
   } catch (error) {
+    if (error instanceof SchoolSetupReferenceError) {
+      throw errors.INVALID_SCHOOL_SETUP_REFERENCE();
+    }
+
+    if (error instanceof AcademicTermDateRangeError) {
+      throw errors.INVALID_SCHOOL_SETUP_DATES();
+    }
+
     if (hasDatabaseCode(error, "23505")) {
       throw errors.DUPLICATE_SCHOOL_SETUP_RECORD();
     }
@@ -144,6 +158,34 @@ function requireRow<T>(row: T | null, errors: SchoolSetupErrors): T {
 }
 
 export const schoolSetupRouter = {
+  academicTerms: {
+    create: schoolSetupProcedure
+      .route({
+        description: "Create an academic term for the active organization",
+        method: "POST"
+      })
+      .input(academicTermCreateInputSchema)
+      .output(academicTermSchema)
+      .handler(async ({ context, errors, input }) => {
+        const organizationId = await requireSchoolSetupManager(context, errors);
+        return mapSchoolSetupWriteError(() => createAcademicTerm(organizationId, input), errors);
+      }),
+    update: schoolSetupProcedure
+      .route({
+        description: "Update an academic term for the active organization",
+        method: "PATCH"
+      })
+      .input(academicTermUpdateInputSchema)
+      .output(academicTermSchema)
+      .handler(async ({ context, errors, input }) => {
+        const organizationId = await requireSchoolSetupManager(context, errors);
+        const row = await mapSchoolSetupWriteError(
+          () => updateAcademicTerm(organizationId, input),
+          errors
+        );
+        return requireRow(row, errors);
+      })
+  },
   academicYears: {
     create: schoolSetupProcedure
       .route({
@@ -154,7 +196,7 @@ export const schoolSetupRouter = {
       .output(academicYearSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        return mapDatabaseError(() => createAcademicYear(organizationId, input), errors);
+        return mapSchoolSetupWriteError(() => createAcademicYear(organizationId, input), errors);
       }),
     update: schoolSetupProcedure
       .route({
@@ -165,7 +207,10 @@ export const schoolSetupRouter = {
       .output(academicYearSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        const row = await mapDatabaseError(() => updateAcademicYear(organizationId, input), errors);
+        const row = await mapSchoolSetupWriteError(
+          () => updateAcademicYear(organizationId, input),
+          errors
+        );
         return requireRow(row, errors);
       })
   },
@@ -179,7 +224,7 @@ export const schoolSetupRouter = {
       .output(gradeLevelSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        return mapDatabaseError(() => createGradeLevel(organizationId, input), errors);
+        return mapSchoolSetupWriteError(() => createGradeLevel(organizationId, input), errors);
       }),
     update: schoolSetupProcedure
       .route({
@@ -190,7 +235,10 @@ export const schoolSetupRouter = {
       .output(gradeLevelSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        const row = await mapDatabaseError(() => updateGradeLevel(organizationId, input), errors);
+        const row = await mapSchoolSetupWriteError(
+          () => updateGradeLevel(organizationId, input),
+          errors
+        );
         return requireRow(row, errors);
       })
   },
@@ -220,7 +268,7 @@ export const schoolSetupRouter = {
       .output(sectionSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        return mapDatabaseError(() => createSection(organizationId, input), errors);
+        return mapSchoolSetupWriteError(() => createSection(organizationId, input), errors);
       }),
     update: schoolSetupProcedure
       .route({
@@ -231,7 +279,10 @@ export const schoolSetupRouter = {
       .output(sectionSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        const row = await mapDatabaseError(() => updateSection(organizationId, input), errors);
+        const row = await mapSchoolSetupWriteError(
+          () => updateSection(organizationId, input),
+          errors
+        );
         return requireRow(row, errors);
       })
   },
@@ -245,7 +296,7 @@ export const schoolSetupRouter = {
       .output(subjectSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        return mapDatabaseError(() => createSubject(organizationId, input), errors);
+        return mapSchoolSetupWriteError(() => createSubject(organizationId, input), errors);
       }),
     update: schoolSetupProcedure
       .route({
@@ -256,7 +307,10 @@ export const schoolSetupRouter = {
       .output(subjectSchema)
       .handler(async ({ context, errors, input }) => {
         const organizationId = await requireSchoolSetupManager(context, errors);
-        const row = await mapDatabaseError(() => updateSubject(organizationId, input), errors);
+        const row = await mapSchoolSetupWriteError(
+          () => updateSubject(organizationId, input),
+          errors
+        );
         return requireRow(row, errors);
       })
   }
