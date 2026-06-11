@@ -426,6 +426,7 @@ function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
                     min="0"
                     name="sortOrder"
                     required
+                    step="1"
                     type="number"
                   />
                 </Field>
@@ -551,7 +552,7 @@ function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
                       {m.school_setup_page__capacity()}
                     </FieldLabel>
                   </FieldContent>
-                  <Input id="section-capacity" min="0" name="capacity" type="number" />
+                  <Input id="section-capacity" min="0" name="capacity" step="1" type="number" />
                 </Field>
               </div>
               {!canCreateSection && (

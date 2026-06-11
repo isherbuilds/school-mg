@@ -8,7 +8,7 @@ import { appConfig } from "@/config/app.config";
 
 export const Route = createFileRoute("/{-$locale}/(root-layout)/(auth)/school-setup/")({
   beforeLoad: async ({ context }) => {
-    await context.queryClient.ensureQueryData(getSchoolSetupQueryOptions());
+    await context.queryClient.ensureQueryData(getSchoolSetupQueryOptions()).catch(() => undefined);
   },
   head: ({ params }) =>
     generateAppSeo({
