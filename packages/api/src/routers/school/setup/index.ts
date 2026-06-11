@@ -194,7 +194,12 @@ export const schoolSetupRouter = {
     .output(schoolSetupListOutputSchema)
     .handler(async ({ context, errors, input }) => {
       const organizationId = await requireActiveOrganization(context, errors);
-      return listSchoolSetup(organizationId, input);
+      const [setup, canManageSetup] = await Promise.all([
+        listSchoolSetup(organizationId, input),
+        isSchoolSetupManager(organizationId, context.session.user.id)
+      ]);
+
+      return { ...setup, canManageSetup };
     }),
   sections: {
     create: schoolSetupProcedure

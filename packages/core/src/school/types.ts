@@ -244,6 +244,7 @@ export type SchoolSetupListInput = z.infer<typeof schoolSetupListInputSchema>;
 
 export const schoolSetupListOutputSchema = z.object({
   academicYears: z.array(academicYearSchema),
+  canManageSetup: z.boolean(),
   gradeLevels: z.array(gradeLevelSchema),
   sections: z.array(sectionSchema),
   subjects: z.array(subjectSchema)

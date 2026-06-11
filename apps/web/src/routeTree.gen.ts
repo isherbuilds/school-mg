@@ -22,6 +22,7 @@ import { Route as Char123LocaleChar125rootLayoutTermsOfServiceIndexRouteImport }
 import { Route as Char123LocaleChar125rootLayoutPrivacyPolicyIndexRouteImport } from './routes/{-$locale}/(root-layout)/privacy-policy/index'
 import { Route as Char123LocaleChar125rootLayoutPlaygroundIndexRouteImport } from './routes/{-$locale}/(root-layout)/playground/index'
 import { Route as Char123LocaleChar125rootLayoutErrorIndexRouteImport } from './routes/{-$locale}/(root-layout)/error/index'
+import { Route as Char123LocaleChar125rootLayoutauthSchoolSetupIndexRouteImport } from './routes/{-$locale}/(root-layout)/(auth)/school-setup/index'
 import { Route as Char123LocaleChar125rootLayoutauthDashboardIndexRouteImport } from './routes/{-$locale}/(root-layout)/(auth)/dashboard/index'
 import { Route as Char123LocaleChar125centeredLayoutguestSignInIndexRouteImport } from './routes/{-$locale}/(centered-layout)/(guest)/sign-in/index'
 import { Route as Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRouteImport } from './routes/{-$locale}/(centered-layout)/(guest)/create-an-account/index'
@@ -97,6 +98,12 @@ const Char123LocaleChar125rootLayoutErrorIndexRoute =
     path: '/error/',
     getParentRoute: () => Char123LocaleChar125rootLayoutRouteRoute,
   } as any)
+const Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute =
+  Char123LocaleChar125rootLayoutauthSchoolSetupIndexRouteImport.update({
+    id: '/school-setup/',
+    path: '/school-setup/',
+    getParentRoute: () => Char123LocaleChar125rootLayoutauthRouteRoute,
+  } as any)
 const Char123LocaleChar125rootLayoutauthDashboardIndexRoute =
   Char123LocaleChar125rootLayoutauthDashboardIndexRouteImport.update({
     id: '/dashboard/',
@@ -131,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/create-an-account/': typeof Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRoute
   '/{-$locale}/sign-in/': typeof Char123LocaleChar125centeredLayoutguestSignInIndexRoute
   '/{-$locale}/dashboard/': typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  '/{-$locale}/school-setup/': typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
 }
 export interface FileRoutesByTo {
   '/{-$locale}': typeof Char123LocaleChar125rootLayoutIndexRoute
@@ -144,6 +152,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/create-an-account': typeof Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRoute
   '/{-$locale}/sign-in': typeof Char123LocaleChar125centeredLayoutguestSignInIndexRoute
   '/{-$locale}/dashboard': typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  '/{-$locale}/school-setup': typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -163,6 +172,7 @@ export interface FileRoutesById {
   '/{-$locale}/(centered-layout)/(guest)/create-an-account/': typeof Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRoute
   '/{-$locale}/(centered-layout)/(guest)/sign-in/': typeof Char123LocaleChar125centeredLayoutguestSignInIndexRoute
   '/{-$locale}/(root-layout)/(auth)/dashboard/': typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  '/{-$locale}/(root-layout)/(auth)/school-setup/': typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/create-an-account/'
     | '/{-$locale}/sign-in/'
     | '/{-$locale}/dashboard/'
+    | '/{-$locale}/school-setup/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/{-$locale}'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/create-an-account'
     | '/{-$locale}/sign-in'
     | '/{-$locale}/dashboard'
+    | '/{-$locale}/school-setup'
   id:
     | '__root__'
     | '/{-$locale}'
@@ -210,6 +222,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/(centered-layout)/(guest)/create-an-account/'
     | '/{-$locale}/(centered-layout)/(guest)/sign-in/'
     | '/{-$locale}/(root-layout)/(auth)/dashboard/'
+    | '/{-$locale}/(root-layout)/(auth)/school-setup/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125rootLayoutErrorIndexRouteImport
       parentRoute: typeof Char123LocaleChar125rootLayoutRouteRoute
     }
+    '/{-$locale}/(root-layout)/(auth)/school-setup/': {
+      id: '/{-$locale}/(root-layout)/(auth)/school-setup/'
+      path: '/school-setup'
+      fullPath: '/{-$locale}/school-setup/'
+      preLoaderRoute: typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125rootLayoutauthRouteRoute
+    }
     '/{-$locale}/(root-layout)/(auth)/dashboard/': {
       id: '/{-$locale}/(root-layout)/(auth)/dashboard/'
       path: '/dashboard'
@@ -371,12 +391,15 @@ const Char123LocaleChar125centeredLayoutRouteRouteWithChildren =
 
 interface Char123LocaleChar125rootLayoutauthRouteRouteChildren {
   Char123LocaleChar125rootLayoutauthDashboardIndexRoute: typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute: typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
 }
 
 const Char123LocaleChar125rootLayoutauthRouteRouteChildren: Char123LocaleChar125rootLayoutauthRouteRouteChildren =
   {
     Char123LocaleChar125rootLayoutauthDashboardIndexRoute:
       Char123LocaleChar125rootLayoutauthDashboardIndexRoute,
+    Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute:
+      Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute,
   }
 
 const Char123LocaleChar125rootLayoutauthRouteRouteWithChildren =
