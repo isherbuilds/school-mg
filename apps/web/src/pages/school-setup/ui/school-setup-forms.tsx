@@ -22,19 +22,20 @@ import {
 import { Input } from "@tsu-stack/ui/components/input";
 import { Spinner } from "@tsu-stack/ui/components/spinner";
 
+import {
+  getBoolean,
+  getOptionalNumber,
+  getOptionalString,
+  getRequiredNumber,
+  getRequiredString
+} from "@/shared/lib/form-values";
+
 import { useCreateAcademicYearMutation } from "@/pages/school-setup/api/create-academic-year.mutation";
 import { useCreateGradeLevelMutation } from "@/pages/school-setup/api/create-grade-level.mutation";
 import { useCreateSectionMutation } from "@/pages/school-setup/api/create-section.mutation";
 import { useCreateSubjectMutation } from "@/pages/school-setup/api/create-subject.mutation";
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
-import {
-  getBoolean,
-  getErrorMessage,
-  getOptionalNumber,
-  getOptionalString,
-  getRequiredNumber,
-  getRequiredString
-} from "@/pages/school-setup/lib/form-values";
+import { getSchoolSetupErrorMessage } from "@/pages/school-setup/lib/errors";
 import { NativeSelect } from "@/pages/school-setup/ui/native-select";
 
 function SubmitButton({ children, isPending }: { children: string; isPending: boolean }) {
@@ -69,7 +70,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__academic_year_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 
@@ -87,7 +88,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__grade_level_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 
@@ -105,7 +106,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__subject_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 
@@ -125,7 +126,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__section_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 
@@ -175,13 +176,17 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
               </div>
               <Field orientation="horizontal">
                 <input
+                  aria-labelledby="academic-year-is-current-label"
                   id="academic-year-is-current"
                   name="isCurrent"
                   type="checkbox"
                   className="h-4 w-4 rounded border-input"
                 />
                 <FieldContent>
-                  <FieldLabel htmlFor="academic-year-is-current">
+                  <FieldLabel
+                    id="academic-year-is-current-label"
+                    htmlFor="academic-year-is-current"
+                  >
                     {m.school_setup_page__set_as_current_year()}
                   </FieldLabel>
                   <FieldDescription>

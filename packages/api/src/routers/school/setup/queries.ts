@@ -19,6 +19,7 @@ import {
   academicYears,
   gradeLevels,
   member,
+  session,
   schoolActorRoles,
   schoolActors,
   sections,
@@ -116,6 +117,16 @@ export async function isSchoolSetupManager(
     .limit(1);
 
   return rows.length > 0;
+}
+
+export async function getActiveOrganizationIdForSession(sessionId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ activeOrganizationId: session.activeOrganizationId })
+    .from(session)
+    .where(eq(session.id, sessionId))
+    .limit(1);
+
+  return row?.activeOrganizationId ?? null;
 }
 
 export async function listSchoolSetup(

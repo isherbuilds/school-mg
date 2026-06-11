@@ -6,9 +6,11 @@ import { m } from "@tsu-stack/i18n/messages";
 import { Field, FieldGroup, FieldLabel } from "@tsu-stack/ui/components/field";
 import { Input } from "@tsu-stack/ui/components/input";
 
+import { getRequiredString } from "@/shared/lib/form-values";
+
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { useUpdateAcademicYearMutation } from "@/pages/school-setup/api/update-academic-year.mutation";
-import { getErrorMessage, getRequiredString } from "@/pages/school-setup/lib/form-values";
+import { getSchoolSetupErrorMessage } from "@/pages/school-setup/lib/errors";
 import { ListItem, RecordList, UpdateButton } from "@/pages/school-setup/ui/setup-list-primitives";
 
 type AcademicYear = SchoolSetupQueryResult["academicYears"][number];
@@ -44,7 +46,7 @@ export function AcademicYearList({
       onCancel();
       toast.success(m.school_setup_page__academic_year_updated());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 

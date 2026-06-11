@@ -23,6 +23,7 @@ import {
   createGradeLevel,
   createSection,
   createSubject,
+  getActiveOrganizationIdForSession,
   isOrganizationMember,
   isSchoolSetupManager,
   listSchoolSetup,
@@ -71,12 +72,12 @@ type SchoolSetupErrors = Parameters<
   Parameters<typeof schoolSetupProcedure.handler>[0]
 >[0]["errors"];
 
-function getActiveOrganizationId(context: AuthenticatedContext): string | null {
-  return context.session.session.activeOrganizationId ?? null;
+async function getActiveOrganizationId(context: AuthenticatedContext): Promise<string | null> {
+  return getActiveOrganizationIdForSession(context.session.session.id);
 }
 
 async function requireActiveOrganization(context: AuthenticatedContext, errors: SchoolSetupErrors) {
-  const organizationId = getActiveOrganizationId(context);
+  const organizationId = await getActiveOrganizationId(context);
 
   if (!organizationId) {
     throw errors.ACTIVE_ORGANIZATION_REQUIRED();
@@ -103,7 +104,15 @@ async function requireSchoolSetupManager(context: AuthenticatedContext, errors: 
 }
 
 function hasDatabaseCode(error: unknown, code: string): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
+  if ("code" in error && error.code === code) {
+    return true;
+  }
+
+  return "cause" in error && hasDatabaseCode(error.cause, code);
 }
 
 async function mapDatabaseError<T>(action: () => Promise<T>, errors: SchoolSetupErrors) {

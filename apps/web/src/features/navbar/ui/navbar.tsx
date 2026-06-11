@@ -11,6 +11,7 @@ import { ThemeSwitcher } from "@/shared/ui/theme-switcher";
 
 import { navLinks } from "@/features/navbar/config/nav-links.config";
 import { MobileNav } from "@/features/navbar/ui/mobile-nav";
+import { SchoolSwitcher } from "@/features/navbar/ui/school-switcher";
 import { UserDropdown } from "@/features/navbar/ui/user-dropdown";
 
 export function Navbar() {
@@ -43,6 +44,9 @@ export function Navbar() {
               )}
             </Button>
           ))}
+          <Suspense fallback={null}>
+            <SchoolSwitcher />
+          </Suspense>
           <LocaleSwitcher />
           <ThemeSwitcher size="icon-sm" />
           <Suspense fallback={null}>
