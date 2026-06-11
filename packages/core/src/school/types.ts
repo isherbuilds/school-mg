@@ -172,6 +172,64 @@ export const academicYearUpdateInputSchema = academicYearInputBaseSchema
   });
 export type AcademicYearUpdateInput = z.infer<typeof academicYearUpdateInputSchema>;
 
+export const academicTermSchema = z.object({
+  academicYearId: uuidSchema,
+  createdAt: z.iso.datetime(),
+  endDate: isoDateSchema,
+  id: uuidSchema,
+  kind: termKindSchema,
+  name: nonEmptyTextSchema,
+  sortOrder: z.number().int(),
+  startDate: isoDateSchema,
+  updatedAt: z.iso.datetime()
+});
+export type AcademicTerm = z.infer<typeof academicTermSchema>;
+
+const academicTermInputBaseSchema = z.object({
+  academicYearId: uuidSchema,
+  endDate: isoDateSchema,
+  kind: termKindSchema,
+  name: nonEmptyTextSchema.max(120),
+  sortOrder: z.number().int().min(0),
+  startDate: isoDateSchema
+});
+
+export const academicTermCreateInputSchema = academicTermInputBaseSchema
+  .extend({
+    kind: termKindSchema.default("custom"),
+    sortOrder: z.number().int().min(0).default(0)
+  })
+  .refine((input) => input.startDate <= input.endDate, {
+    message: "Start date must be before or equal to end date.",
+    path: ["endDate"]
+  });
+export type AcademicTermCreateInput = z.infer<typeof academicTermCreateInputSchema>;
+
+export const academicTermUpdateInputSchema = academicTermInputBaseSchema
+  .partial()
+  .extend({
+    id: uuidSchema
+  })
+  .refine(hasUpdateFields, {
+    message: "At least one field must be provided.",
+    path: ["id"]
+  })
+  .refine(
+    (input) =>
+      input.startDate === undefined ||
+      input.endDate === undefined ||
+      input.startDate <= input.endDate,
+    {
+      message: "Start date must be before or equal to end date.",
+      path: ["endDate"]
+    }
+  )
+  .refine((input) => (input.startDate === undefined) === (input.endDate === undefined), {
+    message: "Start date and end date must be updated together.",
+    path: ["endDate"]
+  });
+export type AcademicTermUpdateInput = z.infer<typeof academicTermUpdateInputSchema>;
+
 export const gradeLevelSchema = z.object({
   code: nonEmptyTextSchema,
   createdAt: z.iso.datetime(),
@@ -282,6 +340,7 @@ export const schoolSetupListInputSchema = z.object({
 export type SchoolSetupListInput = z.infer<typeof schoolSetupListInputSchema>;
 
 export const schoolSetupListOutputSchema = z.object({
+  academicTerms: z.array(academicTermSchema),
   academicYears: z.array(academicYearSchema),
   canManageSetup: z.boolean(),
   gradeLevels: z.array(gradeLevelSchema),

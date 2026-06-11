@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  academicTermCreateInputSchema,
+  academicTermSchema,
+  academicTermUpdateInputSchema,
   academicYearCreateInputSchema,
   academicYearUpdateInputSchema,
   attendanceStatusSchema,
@@ -12,6 +15,7 @@ import {
   schoolBootstrapCreateOutputSchema,
   schoolBootstrapListOutputSchema,
   schoolSelectInputSchema,
+  schoolSetupListOutputSchema,
   schoolSummarySchema,
   staffAssignmentRoleSchema,
   subjectCreateInputSchema,
@@ -83,6 +87,58 @@ describe("school domain contracts", () => {
         startDate: "2026-04-01"
       })
     ).toMatchObject({ isCurrent: false });
+  });
+
+  it("validates academic term transport records", () => {
+    expect(
+      academicTermSchema.parse({
+        academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+        createdAt: "2026-06-11T00:00:00.000Z",
+        endDate: "2026-09-30",
+        id: "018f3ad5-8af8-733f-bb74-33f7f224f127",
+        kind: "semester",
+        name: "Term 1",
+        sortOrder: 1,
+        startDate: "2026-06-01",
+        updatedAt: "2026-06-11T00:00:00.000Z"
+      })
+    ).toMatchObject({
+      kind: "semester",
+      name: "Term 1",
+      sortOrder: 1
+    });
+  });
+
+  it("validates academic term date ranges", () => {
+    expect(() =>
+      academicTermCreateInputSchema.parse({
+        academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+        endDate: "2026-06-01",
+        name: "Term 1",
+        startDate: "2026-09-30"
+      })
+    ).toThrow("Start date must be before or equal to end date.");
+
+    expect(() =>
+      academicTermUpdateInputSchema.parse({
+        endDate: "2026-06-01",
+        id: "018f3ad5-8af8-733f-bb74-33f7f224f127",
+        startDate: "2026-09-30"
+      })
+    ).toThrow("Start date must be before or equal to end date.");
+  });
+
+  it("includes academic terms in school setup list output", () => {
+    const output = schoolSetupListOutputSchema.parse({
+      academicTerms: [],
+      academicYears: [],
+      canManageSetup: true,
+      gradeLevels: [],
+      sections: [],
+      subjects: []
+    });
+
+    expect(output.academicTerms).toEqual([]);
   });
 
   it("defaults setup inputs without duplicating database defaults in callers", () => {
