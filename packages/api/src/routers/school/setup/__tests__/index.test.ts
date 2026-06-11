@@ -78,12 +78,21 @@ describe("school setup router", () => {
   it("allows organization members to list setup records", async () => {
     expect(await call(schoolSetupRouter.list, {}, { context })).toEqual({
       academicYears: [],
+      canManageSetup: true,
       gradeLevels: [],
       sections: [],
       subjects: []
     });
 
-    expect(queries.isSchoolSetupManager).not.toHaveBeenCalled();
+    expect(queries.isSchoolSetupManager).toHaveBeenCalledWith("org-1", "user-1");
+  });
+
+  it("allows non-manager members to list setup records without management capability", async () => {
+    vi.mocked(queries.isSchoolSetupManager).mockResolvedValue(false);
+
+    expect(await call(schoolSetupRouter.list, {}, { context })).toMatchObject({
+      canManageSetup: false
+    });
   });
 
   it("rejects setup mutations for non-manager members", async () => {

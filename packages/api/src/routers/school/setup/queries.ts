@@ -121,7 +121,7 @@ export async function isSchoolSetupManager(
 export async function listSchoolSetup(
   organizationId: string,
   input: SchoolSetupListInput
-): Promise<SchoolSetupListOutput> {
+): Promise<Omit<SchoolSetupListOutput, "canManageSetup">> {
   const [yearRows, gradeRows, subjectRows, sectionRows] = await Promise.all([
     db
       .select()
