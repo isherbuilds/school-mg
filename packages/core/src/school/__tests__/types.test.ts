@@ -128,6 +128,64 @@ describe("school domain contracts", () => {
     ).toThrow("Start date must be before or equal to end date.");
   });
 
+  it("defaults academic term create inputs", () => {
+    expect(
+      academicTermCreateInputSchema.parse({
+        academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+        endDate: "2026-09-30",
+        name: "Term 1",
+        startDate: "2026-06-01"
+      })
+    ).toMatchObject({
+      kind: "custom",
+      sortOrder: 0
+    });
+  });
+
+  it("rejects negative and non-integer academic term sort orders", () => {
+    expect(() =>
+      academicTermCreateInputSchema.parse({
+        academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+        endDate: "2026-09-30",
+        name: "Term 1",
+        sortOrder: -1,
+        startDate: "2026-06-01"
+      })
+    ).toThrow();
+
+    expect(() =>
+      academicTermCreateInputSchema.parse({
+        academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+        endDate: "2026-09-30",
+        name: "Term 1",
+        sortOrder: 1.5,
+        startDate: "2026-06-01"
+      })
+    ).toThrow();
+  });
+
+  it("rejects incomplete academic term updates", () => {
+    expect(() =>
+      academicTermUpdateInputSchema.parse({
+        id: "018f3ad5-8af8-733f-bb74-33f7f224f127"
+      })
+    ).toThrow("At least one field must be provided.");
+
+    expect(() =>
+      academicTermUpdateInputSchema.parse({
+        id: "018f3ad5-8af8-733f-bb74-33f7f224f127",
+        startDate: "2026-06-01"
+      })
+    ).toThrow("Start date and end date must be updated together.");
+
+    expect(() =>
+      academicTermUpdateInputSchema.parse({
+        endDate: "2026-09-30",
+        id: "018f3ad5-8af8-733f-bb74-33f7f224f127"
+      })
+    ).toThrow("Start date and end date must be updated together.");
+  });
+
   it("includes academic terms in school setup list output", () => {
     const output = schoolSetupListOutputSchema.parse({
       academicTerms: [],
