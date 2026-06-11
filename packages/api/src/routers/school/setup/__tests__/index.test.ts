@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type OrpcContext } from "#@/lib/context/types";
 import { schoolSetupRouter } from "#@/routers/school/setup/index";
 import * as queries from "#@/routers/school/setup/queries";
+import {
+  AcademicTermDateRangeError,
+  SchoolSetupReferenceError
+} from "#@/routers/school/setup/utils";
 
 vi.mock("#@/routers/school/setup/queries", () => {
   return {
@@ -264,5 +268,39 @@ describe("school setup router", () => {
         { context }
       )
     ).rejects.toMatchObject({ code: "INVALID_SCHOOL_SETUP_REFERENCE" });
+  });
+
+  it("maps academic term organization reference failures to typed errors", async () => {
+    vi.mocked(queries.createAcademicTerm).mockRejectedValue(new SchoolSetupReferenceError());
+
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.create,
+        {
+          academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+          endDate: "2026-09-30",
+          name: "Term 1",
+          startDate: "2026-06-01"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "INVALID_SCHOOL_SETUP_REFERENCE" });
+  });
+
+  it("maps academic terms outside academic years to typed date errors", async () => {
+    vi.mocked(queries.createAcademicTerm).mockRejectedValue(new AcademicTermDateRangeError());
+
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.create,
+        {
+          academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+          endDate: "2027-04-01",
+          name: "Term 1",
+          startDate: "2026-06-01"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "INVALID_SCHOOL_SETUP_DATES" });
   });
 });

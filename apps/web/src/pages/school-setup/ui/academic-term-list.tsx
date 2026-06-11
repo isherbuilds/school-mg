@@ -6,7 +6,7 @@ import { m } from "@tsu-stack/i18n/messages";
 import { Field, FieldGroup, FieldLabel } from "@tsu-stack/ui/components/field";
 import { Input } from "@tsu-stack/ui/components/input";
 
-import { getRequiredString } from "@/shared/lib/form-values";
+import { getRequiredNumber, getRequiredString } from "@/shared/lib/form-values";
 
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { useUpdateAcademicTermMutation } from "@/pages/school-setup/api/update-academic-term.mutation";
@@ -55,6 +55,7 @@ export function AcademicTermList({
         id,
         kind: getRequiredString(formData, "kind") as AcademicTerm["kind"],
         name: getRequiredString(formData, "name"),
+        sortOrder: getRequiredNumber(formData, "sortOrder"),
         startDate: getRequiredString(formData, "startDate")
       });
       onCancel();
@@ -76,7 +77,7 @@ export function AcademicTermList({
         <ListItem
           isEditing={isEditing(term.id)}
           key={term.id}
-          meta={`${getYearName(term.academicYearId)} / ${getTermKindLabel(term.kind)} / ${term.startDate} - ${term.endDate}`}
+          meta={`#${term.sortOrder} / ${getYearName(term.academicYearId)} / ${getTermKindLabel(term.kind)} / ${term.startDate} - ${term.endDate}`}
           onCancel={onCancel}
           onEdit={canManageSetup ? () => onEdit(term.id) : undefined}
           renderEditForm={() => (
@@ -129,7 +130,7 @@ function AcademicTermEditForm({
             ))}
           </NativeSelect>
         </Field>
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px]">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px_96px]">
           <Field>
             <FieldLabel htmlFor={`academic-term-${term.id}-name`}>
               {m.school_setup_page__academic_term_name()}
@@ -152,6 +153,20 @@ function AcademicTermEditForm({
                 </option>
               ))}
             </NativeSelect>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={`academic-term-${term.id}-sort-order`}>
+              {m.school_setup_page__order()}
+            </FieldLabel>
+            <Input
+              defaultValue={term.sortOrder}
+              id={`academic-term-${term.id}-sort-order`}
+              min="0"
+              name="sortOrder"
+              required
+              step="1"
+              type="number"
+            />
           </Field>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">

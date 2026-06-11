@@ -151,7 +151,7 @@ describe("school domain contracts", () => {
         sortOrder: -1,
         startDate: "2026-06-01"
       })
-    ).toThrow();
+    ).toThrow("Too small");
 
     expect(() =>
       academicTermCreateInputSchema.parse({
@@ -161,7 +161,7 @@ describe("school domain contracts", () => {
         sortOrder: 1.5,
         startDate: "2026-06-01"
       })
-    ).toThrow();
+    ).toThrow("Invalid input");
   });
 
   it("rejects incomplete academic term updates", () => {
@@ -277,7 +277,7 @@ describe("school domain contracts", () => {
       })
     ).toEqual({ id: "org-1" });
 
-    expect(() => schoolSelectInputSchema.parse({ id: "  " })).toThrow();
+    expect(() => schoolSelectInputSchema.parse({ id: "  " })).toThrow("Too small");
   });
 
   it("keeps school bootstrap output focused on active school selection", () => {
