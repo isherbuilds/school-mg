@@ -313,7 +313,21 @@ type SchoolBootstrapErrors = Parameters<
 >[0]["errors"];
 
 function hasDatabaseCode(error: unknown, code: string): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+  let current = error;
+
+  while (typeof current === "object" && current !== null) {
+    if ("code" in current && current.code === code) {
+      return true;
+    }
+
+    if ("cause" in current) {
+      current = current.cause;
+    } else {
+      break;
+    }
+  }
+
+  return false;
 }
 
 async function mapBootstrapError<T>(action: () => Promise<T>, errors: SchoolBootstrapErrors) {
@@ -357,7 +371,7 @@ export const schoolBootstrapRouter = {
       description: "List schools available to the signed-in user",
       method: "GET"
     })
-    .input(schoolBootstrapCreateInputSchema.partial().optional())
+    .input(z.object({}))
     .output(schoolBootstrapListOutputSchema)
     .handler(async ({ context }) => {
       const authenticatedContext = context as AuthenticatedContext;

@@ -133,6 +133,10 @@ export function SchoolBootstrapPage() {
   };
 
   const handleSelectSchool = async (schoolId: string) => {
+    if (pendingSchoolId !== null) {
+      return;
+    }
+
     try {
       setPendingSchoolId(schoolId);
       await selectSchoolMutation.mutateAsync({ id: schoolId });
@@ -245,6 +249,7 @@ export function SchoolBootstrapPage() {
             schoolsQuery.data.schools.map((school) => {
               const isActive = school.id === schoolsQuery.data.activeSchoolId;
               const isPending = pendingSchoolId === school.id;
+              const isAnySelectionInProgress = pendingSchoolId !== null;
 
               return (
                 <div
@@ -257,7 +262,7 @@ export function SchoolBootstrapPage() {
                   </div>
                   <Button
                     aria-current={isActive ? "true" : undefined}
-                    disabled={isActive || isPending}
+                    disabled={isActive || isAnySelectionInProgress}
                     onClick={() => void handleSelectSchool(school.id)}
                     size="sm"
                     variant={isActive ? "secondary" : "outline"}

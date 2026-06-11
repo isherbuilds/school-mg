@@ -1,5 +1,5 @@
 import { call } from "@orpc/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type OrpcContext } from "#@/lib/context/types";
 import { schoolBootstrapRouter } from "#@/routers/school/bootstrap/index";
@@ -37,6 +37,46 @@ const activeSchool = {
 };
 
 describe("school bootstrap router", () => {
+  const originalEnv = {
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    DATABASE_URL: process.env.DATABASE_URL,
+    NODE_ENV: process.env.NODE_ENV,
+    VITE_SERVER_URL: process.env.VITE_SERVER_URL,
+    VITE_WEB_URL: process.env.VITE_WEB_URL
+  };
+
+  afterAll(() => {
+    if (originalEnv.BETTER_AUTH_SECRET === undefined) {
+      delete process.env.BETTER_AUTH_SECRET;
+    } else {
+      process.env.BETTER_AUTH_SECRET = originalEnv.BETTER_AUTH_SECRET;
+    }
+
+    if (originalEnv.DATABASE_URL === undefined) {
+      delete process.env.DATABASE_URL;
+    } else {
+      process.env.DATABASE_URL = originalEnv.DATABASE_URL;
+    }
+
+    if (originalEnv.NODE_ENV === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalEnv.NODE_ENV;
+    }
+
+    if (originalEnv.VITE_SERVER_URL === undefined) {
+      delete process.env.VITE_SERVER_URL;
+    } else {
+      process.env.VITE_SERVER_URL = originalEnv.VITE_SERVER_URL;
+    }
+
+    if (originalEnv.VITE_WEB_URL === undefined) {
+      delete process.env.VITE_WEB_URL;
+    } else {
+      process.env.VITE_WEB_URL = originalEnv.VITE_WEB_URL;
+    }
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(queries.createSchoolForUser).mockResolvedValue({

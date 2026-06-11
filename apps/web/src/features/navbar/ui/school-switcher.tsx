@@ -66,6 +66,10 @@ function AuthenticatedSchoolSwitcher({
       return;
     }
 
+    if (pendingSchoolId !== null) {
+      return;
+    }
+
     setPendingSchoolId(schoolId);
     try {
       await selectSchoolMutation.mutateAsync({ id: schoolId });

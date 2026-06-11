@@ -1,7 +1,21 @@
 import { m } from "@tsu-stack/i18n/messages";
 
 export function hasErrorCode(error: unknown, code: string): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+  let current = error;
+
+  while (typeof current === "object" && current !== null) {
+    if ("code" in current && current.code === code) {
+      return true;
+    }
+
+    if ("cause" in current) {
+      current = current.cause;
+    } else {
+      break;
+    }
+  }
+
+  return false;
 }
 
 export function getErrorMessage(error: unknown) {

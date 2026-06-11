@@ -164,9 +164,13 @@ export async function listSchoolsForUser(input: {
     .where(eq(member.userId, input.userId))
     .orderBy(asc(organization.name));
 
+  const schools = dedupeSchoolSummaries(rows.map(organizationToSchoolSummary));
+  const isActiveSchoolAccessible = schools.some((school) => school.id === input.activeOrganizationId);
+  const activeSchoolId = isActiveSchoolAccessible ? input.activeOrganizationId : schools[0]?.id ?? null;
+
   return {
-    activeSchoolId: input.activeOrganizationId,
-    schools: dedupeSchoolSummaries(rows.map(organizationToSchoolSummary))
+    activeSchoolId,
+    schools
   };
 }
 
