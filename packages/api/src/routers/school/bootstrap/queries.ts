@@ -1,3 +1,4 @@
+import { parseRootBootstrapEmails } from "@tsu-stack/auth/invitation-signup-gate";
 import {
   type SchoolBootstrapCreateOutput,
   type SchoolBootstrapListOutput,
@@ -12,6 +13,7 @@ import {
   schoolActors,
   session
 } from "@tsu-stack/db/schema";
+import { ENV_SERVER } from "@tsu-stack/env/server/env";
 
 function timestampToIso(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
@@ -38,6 +40,16 @@ const rolePriority: Record<SchoolSummary["role"], number> = {
   principal: 2,
   teacher: 1
 };
+
+export async function canCreateSchoolForUser(email: string): Promise<boolean> {
+  const bootstrapEmails = parseRootBootstrapEmails(ENV_SERVER.ROOT_BOOTSTRAP_EMAILS);
+
+  if (bootstrapEmails.length !== 1) {
+    return false;
+  }
+
+  return bootstrapEmails.includes(email.trim().toLowerCase());
+}
 
 function dedupeSchoolSummaries(rows: SchoolSummary[]): SchoolSummary[] {
   const schoolsById = new Map<string, SchoolSummary>();
