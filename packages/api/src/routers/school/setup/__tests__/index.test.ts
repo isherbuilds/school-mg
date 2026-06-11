@@ -11,6 +11,7 @@ vi.mock("#@/routers/school/setup/queries", () => {
     createGradeLevel: vi.fn(),
     createSection: vi.fn(),
     createSubject: vi.fn(),
+    getActiveOrganizationIdForSession: vi.fn(),
     isOrganizationMember: vi.fn(),
     isSchoolSetupManager: vi.fn(),
     listSchoolSetup: vi.fn(),
@@ -24,7 +25,8 @@ vi.mock("#@/routers/school/setup/queries", () => {
 const context = {
   session: {
     session: {
-      activeOrganizationId: "org-1"
+      activeOrganizationId: "stale-org",
+      id: "session-1"
     },
     user: {
       id: "user-1"
@@ -44,6 +46,7 @@ const gradeLevel = {
 describe("school setup router", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(queries.getActiveOrganizationIdForSession).mockResolvedValue("org-1");
     vi.mocked(queries.isOrganizationMember).mockResolvedValue(true);
     vi.mocked(queries.isSchoolSetupManager).mockResolvedValue(true);
     vi.mocked(queries.listSchoolSetup).mockResolvedValue({
@@ -85,6 +88,16 @@ describe("school setup router", () => {
     });
 
     expect(queries.isSchoolSetupManager).toHaveBeenCalledWith("org-1", "user-1");
+  });
+
+  it("requires an active organization from the session table", async () => {
+    vi.mocked(queries.getActiveOrganizationIdForSession).mockResolvedValue(null);
+
+    await expect(call(schoolSetupRouter.list, {}, { context })).rejects.toMatchObject({
+      code: "ACTIVE_ORGANIZATION_REQUIRED"
+    });
+
+    expect(queries.isOrganizationMember).not.toHaveBeenCalled();
   });
 
   it("allows non-manager members to list setup records without management capability", async () => {

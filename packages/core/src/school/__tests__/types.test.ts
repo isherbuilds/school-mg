@@ -8,6 +8,11 @@ import {
   gradeLevelUpdateInputSchema,
   sectionCreateInputSchema,
   schoolAccessRoleSchema,
+  schoolBootstrapCreateInputSchema,
+  schoolBootstrapCreateOutputSchema,
+  schoolBootstrapListOutputSchema,
+  schoolSelectInputSchema,
+  schoolSummarySchema,
   staffAssignmentRoleSchema,
   subjectCreateInputSchema,
   studentRelationshipTypeSchema,
@@ -120,5 +125,74 @@ describe("school domain contracts", () => {
         startDate: "2026-04-01"
       })
     ).toMatchObject({ endDate: "2027-03-31", startDate: "2026-04-01" });
+  });
+
+  it("trims school bootstrap input and accepts omitted slug", () => {
+    expect(
+      schoolBootstrapCreateInputSchema.parse({
+        name: "  Spring Valley School  "
+      })
+    ).toEqual({
+      name: "Spring Valley School"
+    });
+
+    expect(
+      schoolBootstrapCreateInputSchema.parse({
+        name: "Spring Valley School",
+        slug: "  spring-valley  "
+      })
+    ).toEqual({
+      name: "Spring Valley School",
+      slug: "spring-valley"
+    });
+  });
+
+  it("trims selected school id and rejects blank school selection", () => {
+    expect(
+      schoolSelectInputSchema.parse({
+        id: "  org-1  "
+      })
+    ).toEqual({ id: "org-1" });
+
+    expect(() => schoolSelectInputSchema.parse({ id: "  " })).toThrow();
+  });
+
+  it("keeps school bootstrap output focused on active school selection", () => {
+    const school = {
+      createdAt: "2026-06-11T00:00:00.000Z",
+      id: "org-1",
+      name: "Spring Valley School",
+      role: "owner" as const,
+      slug: "spring-valley"
+    };
+
+    expect(schoolSummarySchema.parse(school)).toEqual(school);
+    expect(
+      schoolBootstrapCreateOutputSchema.parse({
+        activeSchool: school
+      })
+    ).toEqual({
+      activeSchool: school
+    });
+
+    expect(
+      schoolBootstrapListOutputSchema.parse({
+        activeSchoolId: school.id,
+        schools: [school]
+      })
+    ).toEqual({
+      activeSchoolId: school.id,
+      schools: [school]
+    });
+
+    expect(
+      schoolBootstrapListOutputSchema.parse({
+        activeSchoolId: null,
+        schools: []
+      })
+    ).toEqual({
+      activeSchoolId: null,
+      schools: []
+    });
   });
 });

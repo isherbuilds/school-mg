@@ -6,13 +6,10 @@ import { m } from "@tsu-stack/i18n/messages";
 import { Field, FieldGroup, FieldLabel } from "@tsu-stack/ui/components/field";
 import { Input } from "@tsu-stack/ui/components/input";
 
+import { getErrorMessage, getRequiredNumber, getRequiredString } from "@/shared/lib/form-values";
+
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { useUpdateGradeLevelMutation } from "@/pages/school-setup/api/update-grade-level.mutation";
-import {
-  getErrorMessage,
-  getRequiredNumber,
-  getRequiredString
-} from "@/pages/school-setup/lib/form-values";
 import { ListItem, RecordList, UpdateButton } from "@/pages/school-setup/ui/setup-list-primitives";
 
 type GradeLevel = SchoolSetupQueryResult["gradeLevels"][number];

@@ -1,5 +1,9 @@
 import { m } from "@tsu-stack/i18n/messages";
 
+export function hasErrorCode(error: unknown, code: string): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+}
+
 export function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : m.school_setup_page__save_failed();
 }
@@ -21,6 +25,7 @@ export function getRequiredNumber(formData: FormData, key: string) {
   }
   return getFormInteger(value);
 }
+
 export function getNullableString(formData: FormData, key: string) {
   const value = getRequiredString(formData, key);
   return value.length > 0 ? value : null;

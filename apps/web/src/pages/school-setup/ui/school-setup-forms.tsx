@@ -22,11 +22,6 @@ import {
 import { Input } from "@tsu-stack/ui/components/input";
 import { Spinner } from "@tsu-stack/ui/components/spinner";
 
-import { useCreateAcademicYearMutation } from "@/pages/school-setup/api/create-academic-year.mutation";
-import { useCreateGradeLevelMutation } from "@/pages/school-setup/api/create-grade-level.mutation";
-import { useCreateSectionMutation } from "@/pages/school-setup/api/create-section.mutation";
-import { useCreateSubjectMutation } from "@/pages/school-setup/api/create-subject.mutation";
-import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import {
   getBoolean,
   getErrorMessage,
@@ -34,7 +29,13 @@ import {
   getOptionalString,
   getRequiredNumber,
   getRequiredString
-} from "@/pages/school-setup/lib/form-values";
+} from "@/shared/lib/form-values";
+
+import { useCreateAcademicYearMutation } from "@/pages/school-setup/api/create-academic-year.mutation";
+import { useCreateGradeLevelMutation } from "@/pages/school-setup/api/create-grade-level.mutation";
+import { useCreateSectionMutation } from "@/pages/school-setup/api/create-section.mutation";
+import { useCreateSubjectMutation } from "@/pages/school-setup/api/create-subject.mutation";
+import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { NativeSelect } from "@/pages/school-setup/ui/native-select";
 
 function SubmitButton({ children, isPending }: { children: string; isPending: boolean }) {
@@ -175,13 +176,17 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
               </div>
               <Field orientation="horizontal">
                 <input
+                  aria-labelledby="academic-year-is-current-label"
                   id="academic-year-is-current"
                   name="isCurrent"
                   type="checkbox"
                   className="h-4 w-4 rounded border-input"
                 />
                 <FieldContent>
-                  <FieldLabel htmlFor="academic-year-is-current">
+                  <FieldLabel
+                    id="academic-year-is-current-label"
+                    htmlFor="academic-year-is-current"
+                  >
                     {m.school_setup_page__set_as_current_year()}
                   </FieldLabel>
                   <FieldDescription>

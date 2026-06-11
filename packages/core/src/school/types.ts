@@ -80,6 +80,45 @@ export const schoolIdInputSchema = z.object({
 });
 export type SchoolIdInput = z.infer<typeof schoolIdInputSchema>;
 
+const schoolSlugSchema = z
+  .string()
+  .trim()
+  .min(3)
+  .max(80)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and single hyphens.");
+const schoolOrganizationIdSchema = z.string().trim().min(1);
+
+export const schoolBootstrapCreateInputSchema = z.object({
+  name: nonEmptyTextSchema.max(160),
+  slug: schoolSlugSchema.optional()
+});
+export type SchoolBootstrapCreateInput = z.infer<typeof schoolBootstrapCreateInputSchema>;
+
+export const schoolSelectInputSchema = z.object({
+  id: schoolOrganizationIdSchema
+});
+export type SchoolSelectInput = z.infer<typeof schoolSelectInputSchema>;
+
+export const schoolSummarySchema = z.object({
+  createdAt: z.iso.datetime(),
+  id: schoolOrganizationIdSchema,
+  name: nonEmptyTextSchema,
+  role: schoolAccessRoleSchema,
+  slug: schoolSlugSchema
+});
+export type SchoolSummary = z.infer<typeof schoolSummarySchema>;
+
+export const schoolBootstrapCreateOutputSchema = z.object({
+  activeSchool: schoolSummarySchema
+});
+export type SchoolBootstrapCreateOutput = z.infer<typeof schoolBootstrapCreateOutputSchema>;
+
+export const schoolBootstrapListOutputSchema = z.object({
+  activeSchoolId: schoolOrganizationIdSchema.nullable(),
+  schools: z.array(schoolSummarySchema)
+});
+export type SchoolBootstrapListOutput = z.infer<typeof schoolBootstrapListOutputSchema>;
+
 export const academicYearSchema = z.object({
   createdAt: z.iso.datetime(),
   endDate: isoDateSchema,

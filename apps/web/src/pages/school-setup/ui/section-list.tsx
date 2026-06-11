@@ -6,13 +6,10 @@ import { m } from "@tsu-stack/i18n/messages";
 import { Field, FieldGroup, FieldLabel } from "@tsu-stack/ui/components/field";
 import { Input } from "@tsu-stack/ui/components/input";
 
+import { getErrorMessage, getNullableNumber, getRequiredString } from "@/shared/lib/form-values";
+
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { useUpdateSectionMutation } from "@/pages/school-setup/api/update-section.mutation";
-import {
-  getErrorMessage,
-  getNullableNumber,
-  getRequiredString
-} from "@/pages/school-setup/lib/form-values";
 import { NativeSelect } from "@/pages/school-setup/ui/native-select";
 import { ListItem, RecordList, UpdateButton } from "@/pages/school-setup/ui/setup-list-primitives";
 

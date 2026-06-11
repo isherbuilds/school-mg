@@ -16,6 +16,7 @@ import { ThemeSwitcher } from "@/shared/ui/theme-switcher";
 
 import { navLinks } from "@/features/navbar/config/nav-links.config";
 import { NavbarAvatar } from "@/features/navbar/ui/navbar-avatar";
+import { SchoolSwitcher } from "@/features/navbar/ui/school-switcher";
 export function MobileNav() {
   const [open, setOpen] = React.useState(false);
 
@@ -114,6 +115,7 @@ function MobileNavAuth({ onNavigate }: { onNavigate: () => void }) {
       <div className="flex items-center gap-3 px-2">
         <NavbarAvatar avatarImgSrc={user.image} name={user.name} email={user.email} />
       </div>
+      <SchoolSwitcher onNavigate={onNavigate} variant="mobile" />
       <Button className="w-full" variant="destructive" onClick={handleSignOut}>
         <LogOut aria-hidden="true" size={16} />
         Logout
