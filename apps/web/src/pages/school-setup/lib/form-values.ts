@@ -15,9 +15,12 @@ export function getOptionalString(formData: FormData, key: string) {
 }
 
 export function getRequiredNumber(formData: FormData, key: string) {
-  return getFormInteger(getRequiredString(formData, key));
+  const value = getRequiredString(formData, key);
+  if (value.length === 0) {
+    throw new Error(m.school_setup_page__save_failed());
+  }
+  return getFormInteger(value);
 }
-
 export function getNullableString(formData: FormData, key: string) {
   const value = getRequiredString(formData, key);
   return value.length > 0 ? value : null;
