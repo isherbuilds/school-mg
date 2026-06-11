@@ -6,10 +6,11 @@ import { m } from "@tsu-stack/i18n/messages";
 import { Field, FieldGroup, FieldLabel } from "@tsu-stack/ui/components/field";
 import { Input } from "@tsu-stack/ui/components/input";
 
-import { getErrorMessage, getNullableNumber, getRequiredString } from "@/shared/lib/form-values";
+import { getNullableNumber, getRequiredString } from "@/shared/lib/form-values";
 
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { useUpdateSectionMutation } from "@/pages/school-setup/api/update-section.mutation";
+import { getSchoolSetupErrorMessage } from "@/pages/school-setup/lib/errors";
 import { NativeSelect } from "@/pages/school-setup/ui/native-select";
 import { ListItem, RecordList, UpdateButton } from "@/pages/school-setup/ui/setup-list-primitives";
 
@@ -52,7 +53,7 @@ export function SectionList({
       onCancel();
       toast.success(m.school_setup_page__section_updated());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 

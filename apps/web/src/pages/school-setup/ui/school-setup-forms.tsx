@@ -24,7 +24,6 @@ import { Spinner } from "@tsu-stack/ui/components/spinner";
 
 import {
   getBoolean,
-  getErrorMessage,
   getOptionalNumber,
   getOptionalString,
   getRequiredNumber,
@@ -36,6 +35,7 @@ import { useCreateGradeLevelMutation } from "@/pages/school-setup/api/create-gra
 import { useCreateSectionMutation } from "@/pages/school-setup/api/create-section.mutation";
 import { useCreateSubjectMutation } from "@/pages/school-setup/api/create-subject.mutation";
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
+import { getSchoolSetupErrorMessage } from "@/pages/school-setup/lib/errors";
 import { NativeSelect } from "@/pages/school-setup/ui/native-select";
 
 function SubmitButton({ children, isPending }: { children: string; isPending: boolean }) {
@@ -70,7 +70,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__academic_year_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 
@@ -88,7 +88,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__grade_level_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 
@@ -106,7 +106,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__subject_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 
@@ -126,7 +126,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
       form.reset();
       toast.success(m.school_setup_page__section_saved());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 

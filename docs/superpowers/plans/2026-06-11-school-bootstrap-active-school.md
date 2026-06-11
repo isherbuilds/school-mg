@@ -517,6 +517,8 @@ export async function createSchoolForUser(input: {
   return { activeSchool };
 }
 
+// Define role priority: owner > principal > teacher
+const rolePriority = { owner: 1, principal: 2, teacher: 3 };
 export async function listSchoolsForUser(input: {
   activeOrganizationId: string | null;
   userId: string;
@@ -545,10 +547,17 @@ export async function listSchoolsForUser(input: {
     )
     .where(eq(member.userId, input.userId))
     .orderBy(asc(organization.name));
-
+  // Deduplicate schools and keep highest priority role
+  const schoolMap = new Map<string, (typeof rows)[0]>();
+  for (const row of rows) {
+    const existing = schoolMap.get(row.id);
+    if (!existing || rolePriority[row.role] < rolePriority[existing.role]) {
+      schoolMap.set(row.id, row);
+    }
+  }
   return {
     activeSchoolId: input.activeOrganizationId,
-    schools: rows.map(organizationToSchoolSummary)
+    schools: Array.from(schoolMap.values()).map(organizationToSchoolSummary)
   };
 }
 

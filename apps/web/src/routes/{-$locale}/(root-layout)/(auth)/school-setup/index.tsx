@@ -2,17 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { redirect } from "@tsu-stack/i18n/tanstack-start/lib/redirect";
 
-import { hasErrorCode } from "@/shared/lib/form-values";
 import { generateAppSeo } from "@/shared/lib/seo";
 
 import { SchoolSetupPage, getSchoolSetupQueryOptions } from "@/pages/school-setup";
+import { hasSchoolSetupErrorCode } from "@/pages/school-setup/lib/errors";
 
 import { appConfig } from "@/config/app.config";
 
 export const Route = createFileRoute("/{-$locale}/(root-layout)/(auth)/school-setup/")({
   beforeLoad: async ({ context }) => {
     await context.queryClient.ensureQueryData(getSchoolSetupQueryOptions()).catch((error) => {
-      if (hasErrorCode(error, "ACTIVE_ORGANIZATION_REQUIRED")) {
+      if (hasSchoolSetupErrorCode(error, "ACTIVE_ORGANIZATION_REQUIRED")) {
         throw redirect({
           to: "/schools/new"
         });

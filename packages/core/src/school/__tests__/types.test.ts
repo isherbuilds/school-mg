@@ -18,6 +18,7 @@ import {
   studentRelationshipTypeSchema,
   transportRideStatusSchema
 } from "#@/school/types";
+import { normalizeSchoolSlug } from "#@/school/utils";
 
 describe("school domain contracts", () => {
   it("keeps MVP access roles intentionally small", () => {
@@ -145,6 +146,14 @@ describe("school domain contracts", () => {
       name: "Spring Valley School",
       slug: "spring-valley"
     });
+  });
+
+  it("normalizes generated school slugs in one shared utility", () => {
+    expect(normalizeSchoolSlug("  Spring Valley School  ")).toBe("spring-valley-school");
+    expect(normalizeSchoolSlug("A")).toBe("a-school");
+    expect(normalizeSchoolSlug("!!!")).toBe("school");
+    expect(normalizeSchoolSlug("North---East Academy")).toBe("north-east-academy");
+    expect(normalizeSchoolSlug("a".repeat(100))).toHaveLength(80);
   });
 
   it("trims selected school id and rejects blank school selection", () => {

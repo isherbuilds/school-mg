@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { m } from "@tsu-stack/i18n/messages";
+
 import { generateAppSeo } from "@/shared/lib/seo";
 
 import { SchoolBootstrapPage, getSchoolsQueryOptions } from "@/pages/school-bootstrap";
@@ -18,7 +20,7 @@ export const Route = createFileRoute("/{-$locale}/(root-layout)/(auth)/schools/n
         follow: false,
         index: false
       },
-      title: "Create School"
+      title: m.school_bootstrap_page__title()
     }),
   component: SchoolBootstrapPage
 });

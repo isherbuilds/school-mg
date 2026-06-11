@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { type client, orpc } from "@tsu-stack/api/client/tanstack-start/orpc";
 
-import { schoolAccessQueryKeys } from "@/shared/api/school-access/get-schools.query";
+import { clearActiveSchoolSetupQueries } from "./cache";
+import { schoolAccessQueryKeys } from "./get-schools.query";
 
 export function useSelectSchoolMutation() {
   const queryClient = useQueryClient();
@@ -10,10 +11,8 @@ export function useSelectSchoolMutation() {
   return useMutation(
     orpc.school.bootstrap.select.mutationOptions({
       onSuccess: async () => {
+        clearActiveSchoolSetupQueries(queryClient);
         await queryClient.invalidateQueries({ queryKey: schoolAccessQueryKeys.list() });
-        await queryClient.invalidateQueries({
-          queryKey: orpc.school.setup.list.key({ input: {} })
-        });
       }
     })
   );

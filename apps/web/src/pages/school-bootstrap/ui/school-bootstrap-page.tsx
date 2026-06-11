@@ -2,6 +2,7 @@ import { ArrowRight, Building2, Check, Plus, RefreshCw } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
 
+import { normalizeSchoolSlug } from "@tsu-stack/core/school";
 import { m } from "@tsu-stack/i18n/messages";
 import { useNavigate } from "@tsu-stack/i18n/tanstack-start/hooks/use-navigate";
 import { Button } from "@tsu-stack/ui/components/button";
@@ -25,43 +26,16 @@ import { Input } from "@tsu-stack/ui/components/input";
 import { Skeleton } from "@tsu-stack/ui/components/skeleton";
 import { Spinner } from "@tsu-stack/ui/components/spinner";
 
+import { getOptionalString, getRequiredString } from "@/shared/lib/form-values";
+import { Container } from "@/shared/ui/container";
+
 import {
   useCreateSchoolMutation,
   useGetSchoolsQuery,
   useSelectSchoolMutation
-} from "@/shared/api/school-access";
-import {
-  getErrorMessage,
-  getOptionalString,
-  getRequiredString,
-  hasErrorCode
-} from "@/shared/lib/form-values";
-import { Container } from "@/shared/ui/container";
+} from "@/entities/school-access/api";
 
-function getSchoolBootstrapErrorMessage(error: unknown) {
-  if (hasErrorCode(error, "DUPLICATE_SCHOOL_SLUG")) {
-    return m.school_bootstrap_page__duplicate_slug();
-  }
-
-  return getErrorMessage(error);
-}
-
-function generateSchoolSlug(value: string) {
-  const slug = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-")
-    .slice(0, 80)
-    .replace(/^-+|-+$/g, "");
-
-  if (slug.length >= 3) {
-    return slug;
-  }
-
-  return slug ? `${slug}-school` : "";
-}
+import { getSchoolBootstrapErrorMessage } from "@/pages/school-bootstrap/lib/errors";
 
 function SchoolBootstrapSkeleton() {
   return (
@@ -110,7 +84,8 @@ export function SchoolBootstrapPage() {
   const [pendingSchoolId, setPendingSchoolId] = useState<string | null>(null);
   const [schoolName, setSchoolName] = useState("");
   const [schoolSlug, setSchoolSlug] = useState("");
-  const generatedSlug = schoolSlug ? "" : generateSchoolSlug(schoolName);
+  const generatedSlug =
+    schoolSlug || schoolName.trim().length === 0 ? "" : normalizeSchoolSlug(schoolName);
 
   const handleCreateSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -267,7 +242,9 @@ export function SchoolBootstrapPage() {
                     size="sm"
                     variant={isActive ? "secondary" : "outline"}
                   >
-                    {isActive || isPending ? (
+                    {isPending ? (
+                      <Spinner data-icon aria-hidden="true" />
+                    ) : isActive ? (
                       <Check data-icon aria-hidden="true" />
                     ) : (
                       <ArrowRight data-icon aria-hidden="true" />

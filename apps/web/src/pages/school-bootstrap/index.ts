@@ -1,2 +1,2 @@
-export { getSchoolsQueryOptions } from "@/shared/api/school-access";
+export { getSchoolsQueryOptions } from "@/entities/school-access/api";
 export { SchoolBootstrapPage } from "./ui/school-bootstrap-page";

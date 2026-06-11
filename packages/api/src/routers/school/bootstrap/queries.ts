@@ -1,7 +1,8 @@
 import {
   type SchoolBootstrapCreateOutput,
   type SchoolBootstrapListOutput,
-  type SchoolSummary
+  type SchoolSummary,
+  normalizeSchoolSlug
 } from "@tsu-stack/core/school";
 import { and, asc, db, eq } from "@tsu-stack/db";
 import {
@@ -14,23 +15,6 @@ import {
 
 function timestampToIso(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
-}
-
-function slugifySchoolName(name: string): string {
-  const slug = name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-")
-    .slice(0, 80)
-    .replace(/^-+|-+$/g, "");
-
-  if (slug.length >= 3) {
-    return slug;
-  }
-
-  return slug ? `${slug}-school` : "school";
 }
 
 function organizationToSchoolSummary(row: {
@@ -77,7 +61,7 @@ export async function createSchoolForUser(input: {
   userId: string;
   userName: string;
 }): Promise<SchoolBootstrapCreateOutput> {
-  const slug = input.slug ?? slugifySchoolName(input.name);
+  const slug = input.slug ?? normalizeSchoolSlug(input.name);
 
   const activeSchool = await db.transaction(async (tx) => {
     const [org] = await tx
@@ -165,13 +149,50 @@ export async function listSchoolsForUser(input: {
     .orderBy(asc(organization.name));
 
   const schools = dedupeSchoolSummaries(rows.map(organizationToSchoolSummary));
-  const isActiveSchoolAccessible = schools.some((school) => school.id === input.activeOrganizationId);
-  const activeSchoolId = isActiveSchoolAccessible ? input.activeOrganizationId : schools[0]?.id ?? null;
+  const isActiveSchoolAccessible = schools.some(
+    (school) => school.id === input.activeOrganizationId
+  );
+  const activeSchoolId = isActiveSchoolAccessible ? input.activeOrganizationId : null;
 
   return {
     activeSchoolId,
     schools
   };
+}
+
+async function getAccessibleSchoolForUser(input: {
+  organizationId: string;
+  userId: string;
+}): Promise<SchoolSummary | null> {
+  const rows = await db
+    .select({
+      createdAt: organization.createdAt,
+      id: organization.id,
+      name: organization.name,
+      role: schoolActorRoles.role,
+      slug: organization.slug
+    })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .innerJoin(
+      schoolActors,
+      and(
+        eq(schoolActors.organizationId, organization.id),
+        eq(schoolActors.status, "active"),
+        eq(schoolActors.userId, input.userId)
+      )
+    )
+    .innerJoin(
+      schoolActorRoles,
+      and(
+        eq(schoolActorRoles.organizationId, organization.id),
+        eq(schoolActorRoles.actorId, schoolActors.id),
+        eq(schoolActorRoles.active, true)
+      )
+    )
+    .where(and(eq(member.userId, input.userId), eq(organization.id, input.organizationId)));
+
+  return dedupeSchoolSummaries(rows.map(organizationToSchoolSummary))[0] ?? null;
 }
 
 export async function getActiveSchoolIdForSession(sessionId: string): Promise<string | null> {
@@ -189,11 +210,10 @@ export async function selectSchoolForUser(input: {
   sessionId: string;
   userId: string;
 }): Promise<SchoolSummary | null> {
-  const schools = await listSchoolsForUser({
-    activeOrganizationId: input.organizationId,
+  const school = await getAccessibleSchoolForUser({
+    organizationId: input.organizationId,
     userId: input.userId
   });
-  const school = schools.schools.find((row) => row.id === input.organizationId);
 
   if (!school) {
     return null;

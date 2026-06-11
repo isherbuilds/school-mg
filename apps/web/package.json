@@ -16,6 +16,7 @@
     "@fontsource-variable/geist-mono": "catalog:",
     "@fontsource/instrument-serif": "catalog:",
     "@lonik/oh-image": "catalog:",
+    "@orpc/client": "catalog:",
     "@paper-design/shaders-react": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",

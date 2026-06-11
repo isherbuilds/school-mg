@@ -19,7 +19,7 @@ import {
 import { Skeleton } from "@tsu-stack/ui/components/skeleton";
 import { cn } from "@tsu-stack/ui/lib/utils";
 
-import { useGetSchoolsQuery, useSelectSchoolMutation } from "@/shared/api/school-access";
+import { useGetSchoolsQuery, useSelectSchoolMutation } from "@/entities/school-access/api";
 
 type SchoolSwitcherProps = {
   className?: string;

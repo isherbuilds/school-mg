@@ -6,10 +6,11 @@ import { m } from "@tsu-stack/i18n/messages";
 import { Field, FieldGroup, FieldLabel } from "@tsu-stack/ui/components/field";
 import { Input } from "@tsu-stack/ui/components/input";
 
-import { getErrorMessage, getRequiredNumber, getRequiredString } from "@/shared/lib/form-values";
+import { getRequiredNumber, getRequiredString } from "@/shared/lib/form-values";
 
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { useUpdateGradeLevelMutation } from "@/pages/school-setup/api/update-grade-level.mutation";
+import { getSchoolSetupErrorMessage } from "@/pages/school-setup/lib/errors";
 import { ListItem, RecordList, UpdateButton } from "@/pages/school-setup/ui/setup-list-primitives";
 
 type GradeLevel = SchoolSetupQueryResult["gradeLevels"][number];
@@ -45,7 +46,7 @@ export function GradeLevelList({
       onCancel();
       toast.success(m.school_setup_page__grade_level_updated());
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getSchoolSetupErrorMessage(error));
     }
   };
 

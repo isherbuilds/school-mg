@@ -1,27 +1,3 @@
-import { m } from "@tsu-stack/i18n/messages";
-
-export function hasErrorCode(error: unknown, code: string): boolean {
-  let current = error;
-
-  while (typeof current === "object" && current !== null) {
-    if ("code" in current && current.code === code) {
-      return true;
-    }
-
-    if ("cause" in current) {
-      current = current.cause;
-    } else {
-      break;
-    }
-  }
-
-  return false;
-}
-
-export function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : m.school_setup_page__save_failed();
-}
-
 export function getRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
@@ -35,7 +11,7 @@ export function getOptionalString(formData: FormData, key: string) {
 export function getRequiredNumber(formData: FormData, key: string) {
   const value = getRequiredString(formData, key);
   if (value.length === 0) {
-    throw new Error(m.school_setup_page__save_failed());
+    throw new Error("Invalid form value.");
   }
   return getFormInteger(value);
 }
@@ -63,7 +39,7 @@ function getFormInteger(value: string) {
   const number = Number(value);
 
   if (!Number.isFinite(number) || !Number.isInteger(number)) {
-    throw new Error(m.school_setup_page__save_failed());
+    throw new Error("Invalid form value.");
   }
 
   return number;
