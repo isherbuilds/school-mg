@@ -8,8 +8,12 @@ school-mg context defines school operations language for the MVP migration.
 School-facing workspace for admins, teachers, principals, academic admins, and front-office staff.
 _Avoid_: Admin panel, school-web, back office
 
+**School**:
+Tenant-level school record and staff workspace. A signed-in user can create one or more schools and becomes responsible for each school's initial setup and staff access.
+_Avoid_: Organization, tenant, account, workspace
+
 **School Admin**:
-Staff user responsible for setting up academic structure, staff access, and operating rules.
+Staff user responsible for setting up academic structure, staff access, and operating rules. The user who creates a school starts as its School Admin.
 _Avoid_: Super admin, owner
 
 **Teacher**:
@@ -96,10 +100,30 @@ _Avoid_: Accounting, ledger
 Connection from School App local fee records to Edernal Books for official accounting documents and ledger truth.
 _Avoid_: Finance MVP, local fees
 
+**Accounting Truth**:
+Posted accounting documents, ledger impact, balances, and accounting reports owned by Edernal Books. School App and future Transport App may show financial summaries, but not replace accounting truth.
+_Avoid_: School billing history, transport expense summary
+
+**Integration Platform**:
+Future shared surface for external APIs, webhooks, SDKs, MCP tools, channel identity links, API keys, OAuth grants, and agent tool execution.
+_Avoid_: Feature-specific tokens, direct database API
+
+**External API**:
+Versioned public contract for approved server-to-server integrations, authenticated with scoped API keys or bearer tokens.
+_Avoid_: Internal oRPC procedure, database access
+
+**MCP Tool**:
+Audited integration tool that exposes narrow school operations to approved MCP clients through OAuth or scoped bearer credentials.
+_Avoid_: Agent backdoor, unrestricted admin API
+
+**Platform Identity**:
+Linked external channel identity, such as WhatsApp, Telegram, or Slack user/channel metadata, mapped to a school user through an explicit link flow.
+_Avoid_: Phone number as account, chat ID as login
+
 **Transport Assignment**:
 Student-level route and stop assignment for pickup/drop visibility.
 _Avoid_: Transport operations, daily run
 
 **Transport Operations**:
-Full transport workflow for vehicles, crew, daily runs, incidents, GPS, maintenance, and compliance.
+Full transport workflow for vehicles, crew, daily runs, incidents, GPS, maintenance, expenses, and compliance.
 _Avoid_: Transport assignment

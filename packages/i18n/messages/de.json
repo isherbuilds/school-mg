@@ -106,6 +106,8 @@
   "school_setup_page__academic_year_name": "Name des Schuljahrs",
   "school_setup_page__academic_year_saved": "Schuljahr erstellt.",
   "school_setup_page__add_academic_year": "Schuljahr hinzufügen",
+  "school_setup_page__set_as_current_year": "Als aktuelles Jahr festlegen",
+  "school_setup_page__set_as_current_year_description": "Markiert dieses als das aktive Jahr und entfernt die Markierung von allen anderen Jahren.",
   "school_setup_page__start_date": "Startdatum",
   "school_setup_page__end_date": "Enddatum",
   "school_setup_page__grade_levels": "Klassenstufen",

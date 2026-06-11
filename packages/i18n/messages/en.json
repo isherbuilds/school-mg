@@ -106,6 +106,8 @@
   "school_setup_page__academic_year_name": "Academic Year Name",
   "school_setup_page__academic_year_saved": "Academic year created.",
   "school_setup_page__add_academic_year": "Add Academic Year",
+  "school_setup_page__set_as_current_year": "Set as current year",
+  "school_setup_page__set_as_current_year_description": "Marks this as the active year and removes the flag from any other year.",
   "school_setup_page__start_date": "Start Date",
   "school_setup_page__end_date": "End Date",
   "school_setup_page__grade_levels": "Grade Levels",
@@ -144,5 +146,12 @@
   "school_setup_page__core": "Core",
   "school_setup_page__academic_year_name_placeholder": "2026-2027",
   "school_setup_page__read_only_title": "Setup actions unavailable",
-  "school_setup_page__read_only_description": "You can view setup records, but only owners and principals can manage them."
+  "school_setup_page__read_only_description": "You can view setup records, but only owners and principals can manage them.",
+  "school_setup_page__edit": "Edit",
+  "school_setup_page__cancel_edit": "Cancel edit",
+  "school_setup_page__save_changes": "Save Changes",
+  "school_setup_page__academic_year_updated": "Academic year updated.",
+  "school_setup_page__grade_level_updated": "Grade level updated.",
+  "school_setup_page__subject_updated": "Subject updated.",
+  "school_setup_page__section_updated": "Section updated."
 }

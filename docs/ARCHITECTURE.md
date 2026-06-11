@@ -9,7 +9,9 @@ The product is intentionally phased:
 - Staff App first.
 - Local fees after academic operations stabilize.
 - Edernal Books integration after local fee semantics stabilize.
-- Parent portal, full transport operations, communication, chat, notifications, AI, and MCP later.
+- Parent portal, full transport operations, communication, chat, notifications, external APIs, AI, and MCP later.
+
+In product language, a user creates a school. The implementation may use Better Auth organization records for tenancy and membership, but organization is integration language rather than the preferred Staff App term. School creation goes through a School App bootstrap procedure so the underlying organization, active school selection, school actor, and owner access role are established as one domain workflow.
 
 ## Workspace Shape
 
@@ -37,7 +39,8 @@ packages/
 - `packages/core` owns shared domain contracts that cross API and frontend boundaries.
 - `packages/api` exposes typed oRPC contracts and procedures.
 - `apps/web` consumes `packages/api`, `packages/core`, `packages/auth`, and `packages/ui`.
-- Future Edernal Books integration crosses through explicit API/service contracts, not direct table sharing.
+- Future Edernal Books integration crosses through explicit API/service contracts, webhooks, idempotent events, and external references, not direct table sharing.
+- Future external APIs, MCP tools, channel bots, and agents cross through an Integration Platform layer with scoped credentials, school scoping, and audit records.
 
 ## Migration Strategy
 
@@ -88,14 +91,36 @@ School App owns:
 - basic transport assignment
 - local fees when that phase begins
 
+Future Transport App owns:
+
+- vehicles, drivers, attendants, and crew
+- operational routes and daily runs
+- incidents, GPS/provider hooks, maintenance, expenses, and compliance
+
 Edernal Books owns:
 
 - official accounting documents
 - ledger truth
+- invoices, bills, receipts, payments, vendors, and parties
 - accounting reports
 - external accounting integrations
 
-School App will connect to Edernal Books only after local fee semantics are stable.
+School App and future Transport App may record operational facts and accounting-ready intent, but Edernal Books posts accounting documents and returns accounting document IDs, status, and ledger outcomes. School App will connect to Edernal Books only after local fee semantics are stable.
+
+## Integration Platform
+
+The Integration Platform is a later shared capability for public APIs, generated SDKs, webhooks, MCP tools, channel bots, and agent tool execution.
+
+Credential lanes:
+
+- Staff App sessions for human browser workflows.
+- Scoped API keys or bearer tokens for server-to-server external APIs.
+- OAuth grants for hosted MCP and third-party connectors that act on behalf of a staff user within a selected school.
+- Platform identity links for WhatsApp, Telegram, Slack, or similar channels.
+
+Integration calls must resolve a school, user or service principal, scope, and audit context before touching school data. Public APIs expose versioned contracts and stable resource IDs. They do not expose Drizzle tables or internal oRPC procedures directly.
+
+Agents and MCP tools use typed procedures behind the same authorization checks as the app. High-impact actions require explicit product approval flows rather than silent tool execution.
 
 ## Data Integrity
 
