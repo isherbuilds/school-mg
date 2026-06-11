@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
+import { AcademicTermList } from "@/pages/school-setup/ui/academic-term-list";
 import { AcademicYearList } from "@/pages/school-setup/ui/academic-year-list";
 import { GradeLevelList } from "@/pages/school-setup/ui/grade-level-list";
 import { SectionList } from "@/pages/school-setup/ui/section-list";
@@ -8,7 +9,7 @@ import { SubjectList } from "@/pages/school-setup/ui/subject-list";
 
 type EditingRecord = {
   id: string;
-  kind: "academic-year" | "grade-level" | "section" | "subject";
+  kind: "academic-year" | "academic-term" | "grade-level" | "section" | "subject";
 } | null;
 
 export function SetupLists({ setup }: { setup: SchoolSetupQueryResult }) {
@@ -31,6 +32,14 @@ export function SetupLists({ setup }: { setup: SchoolSetupQueryResult }) {
         isEditing={(id) => isEditing("academic-year", id)}
         onCancel={stopEditing}
         onEdit={(id) => startEditing("academic-year", id)}
+      />
+      <AcademicTermList
+        academicTerms={setup.academicTerms}
+        academicYears={setup.academicYears}
+        canManageSetup={setup.canManageSetup}
+        isEditing={(id) => isEditing("academic-term", id)}
+        onCancel={stopEditing}
+        onEdit={(id) => startEditing("academic-term", id)}
       />
       <GradeLevelList
         canManageSetup={setup.canManageSetup}
