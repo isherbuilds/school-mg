@@ -19,6 +19,8 @@ import {
 import { Skeleton } from "@tsu-stack/ui/components/skeleton";
 import { cn } from "@tsu-stack/ui/lib/utils";
 
+import { getDefinedError } from "@/shared/lib/orpc-errors";
+
 import { useGetSchoolsQuery, useSelectSchoolMutation } from "@/entities/school-access/api";
 
 type SchoolSwitcherProps = {
@@ -26,6 +28,16 @@ type SchoolSwitcherProps = {
   onNavigate?: () => void;
   variant?: "desktop" | "mobile";
 };
+
+function getSchoolSwitcherErrorMessage(error: unknown) {
+  const definedError = getDefinedError(error);
+
+  if (definedError) {
+    return definedError.message ?? m.school_switcher__selection_failed();
+  }
+
+  return error instanceof Error ? error.message : m.school_switcher__selection_failed();
+}
 
 export function SchoolSwitcher(props: SchoolSwitcherProps) {
   const { user } = useAuthSuspense();
@@ -77,7 +89,7 @@ function AuthenticatedSchoolSwitcher({
       toast.success(m.school_switcher__school_selected());
       onNavigate?.();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : m.school_setup_page__save_failed());
+      toast.error(getSchoolSwitcherErrorMessage(error));
     } finally {
       setPendingSchoolId(null);
     }

@@ -171,6 +171,7 @@
   "school_bootstrap_page__retry": "Erneut versuchen",
   "school_switcher__trigger_label": "Schule wechseln",
   "school_switcher__label": "Schulen",
+  "school_switcher__selection_failed": "Schule konnte nicht gewechselt werden.",
   "school_switcher__no_school": "Keine Schule ausgewählt",
   "school_switcher__active": "Aktiv",
   "school_switcher__create_school": "Schule erstellen",

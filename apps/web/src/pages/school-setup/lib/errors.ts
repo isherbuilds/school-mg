@@ -1,13 +1,6 @@
-import { type ORPCError, isDefinedError } from "@orpc/client";
-
 import { m } from "@tsu-stack/i18n/messages";
 
-type ClientErrorCandidate = Error | ORPCError<string, unknown>;
-
-function getDefinedError(error: unknown): ORPCError<string, unknown> | null {
-  const candidate = error as ClientErrorCandidate;
-  return isDefinedError(candidate) ? candidate : null;
-}
+import { getDefinedError } from "@/shared/lib/orpc-errors";
 
 export function hasSchoolSetupErrorCode(error: unknown, code: string): boolean {
   return getDefinedError(error)?.code === code;

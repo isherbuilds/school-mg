@@ -1,33 +1,39 @@
-export function getRequiredString(formData: FormData, key: string) {
+function getString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
 }
 
+export function getRequiredString(formData: FormData, key: string) {
+  const value = getString(formData, key);
+
+  if (value.length === 0) {
+    throw new Error("Invalid form value.");
+  }
+
+  return value;
+}
+
 export function getOptionalString(formData: FormData, key: string) {
-  const value = getRequiredString(formData, key);
+  const value = getString(formData, key);
   return value.length > 0 ? value : undefined;
 }
 
 export function getRequiredNumber(formData: FormData, key: string) {
-  const value = getRequiredString(formData, key);
-  if (value.length === 0) {
-    throw new Error("Invalid form value.");
-  }
-  return getFormInteger(value);
+  return getFormInteger(getRequiredString(formData, key));
 }
 
 export function getNullableString(formData: FormData, key: string) {
-  const value = getRequiredString(formData, key);
+  const value = getString(formData, key);
   return value.length > 0 ? value : null;
 }
 
 export function getOptionalNumber(formData: FormData, key: string) {
-  const value = getRequiredString(formData, key);
+  const value = getString(formData, key);
   return value.length > 0 ? getFormInteger(value) : undefined;
 }
 
 export function getNullableNumber(formData: FormData, key: string) {
-  const value = getRequiredString(formData, key);
+  const value = getString(formData, key);
   return value.length > 0 ? getFormInteger(value) : null;
 }
 
