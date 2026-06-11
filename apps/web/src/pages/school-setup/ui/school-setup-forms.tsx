@@ -28,6 +28,7 @@ import { useCreateSectionMutation } from "@/pages/school-setup/api/create-sectio
 import { useCreateSubjectMutation } from "@/pages/school-setup/api/create-subject.mutation";
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import {
+  getBoolean,
   getErrorMessage,
   getOptionalNumber,
   getOptionalString,
@@ -61,7 +62,7 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
     try {
       await academicYearMutation.mutateAsync({
         endDate: getRequiredString(formData, "endDate"),
-        isCurrent: true,
+        isCurrent: getBoolean(formData, "isCurrent"),
         name: getRequiredString(formData, "name"),
         startDate: getRequiredString(formData, "startDate")
       });
@@ -172,6 +173,22 @@ export function SetupForms({ setup }: { setup: SchoolSetupQueryResult }) {
                   <Input id="academic-year-end-date" name="endDate" required type="date" />
                 </Field>
               </div>
+              <Field orientation="horizontal">
+                <input
+                  id="academic-year-is-current"
+                  name="isCurrent"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-input"
+                />
+                <FieldContent>
+                  <FieldLabel htmlFor="academic-year-is-current">
+                    {m.school_setup_page__set_as_current_year()}
+                  </FieldLabel>
+                  <FieldDescription>
+                    {m.school_setup_page__set_as_current_year_description()}
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
               <SubmitButton isPending={academicYearMutation.isPending}>
                 {m.school_setup_page__add_academic_year()}
               </SubmitButton>

@@ -33,6 +33,10 @@ export function getNullableNumber(formData: FormData, key: string) {
   return value.length > 0 ? getFormInteger(value) : null;
 }
 
+export function getBoolean(formData: FormData, key: string) {
+  return formData.get(key) === "on";
+}
+
 function getFormInteger(value: string) {
   const number = Number(value);
 
