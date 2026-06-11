@@ -12,6 +12,9 @@ services:
       - "VITE_WEB_URL=${SERVICE_URL_WEB}"
       - "DATABASE_URL=postgresql://${SERVICE_USER_POSTGRESQL}:${SERVICE_PASSWORD_POSTGRESQL}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
       - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
+      - "ROOT_BOOTSTRAP_EMAILS=${ROOT_BOOTSTRAP_EMAILS:-}"
+      - "RESEND_API_KEY=${RESEND_API_KEY:-}"
+      - "EMAIL_FROM=${EMAIL_FROM:-}"
     exclude_from_hc: true
     depends_on:
       postgres:
@@ -27,14 +30,15 @@ services:
         - "SOURCE_COMMIT=${SOURCE_COMMIT}"
         - "VITE_SERVER_URL=${SERVICE_URL_SERVER}"
         - "VITE_WEB_URL=${SERVICE_URL_WEB}"
-        - "DATABASE_URL=postgresql://${SERVICE_USER_POSTGRESQL}:${SERVICE_PASSWORD_POSTGRESQL}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
-        - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
     environment:
       - SERVICE_URL_SERVER_5000
       - "VITE_SERVER_URL=${SERVICE_URL_SERVER}"
       - "VITE_WEB_URL=${SERVICE_URL_WEB}"
       - "DATABASE_URL=postgresql://${SERVICE_USER_POSTGRESQL}:${SERVICE_PASSWORD_POSTGRESQL}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
       - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
+      - "ROOT_BOOTSTRAP_EMAILS=${ROOT_BOOTSTRAP_EMAILS:-}"
+      - "RESEND_API_KEY=${RESEND_API_KEY:-}"
+      - "EMAIL_FROM=${EMAIL_FROM:-}"
       - "ENABLE_OPEN_API_DOCS=${ENABLE_OPEN_API_DOCS:-false}"
     healthcheck:
       test:
@@ -60,8 +64,6 @@ services:
         - "VITE_WEB_URL=${SERVICE_URL_WEB}"
         - "VITE_IMGPROXY_URL=${VITE_IMGPROXY_URL:-}"
         - "VITE_IMGPROXY_SIGNATURE=${VITE_IMGPROXY_SIGNATURE:-_}"
-        - "DATABASE_URL=postgresql://${SERVICE_USER_POSTGRESQL}:${SERVICE_PASSWORD_POSTGRESQL}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
-        - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
     environment:
       - SERVICE_URL_WEB_3000
       - "VITE_SERVER_URL=${SERVICE_URL_SERVER}"

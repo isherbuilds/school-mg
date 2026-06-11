@@ -46,16 +46,21 @@ COPY . .
 # Ensure the migrations directory exists so that the build doesn't fail when trying to copy it in the production stage.
 RUN mkdir -p packages/db/migrations
 
-ARG SOURCE_COMMIT VITE_SERVER_URL VITE_WEB_URL DATABASE_URL BETTER_AUTH_SECRET
+ARG SOURCE_COMMIT VITE_SERVER_URL VITE_WEB_URL
 ENV SOURCE_COMMIT=${SOURCE_COMMIT} \
     VITE_SERVER_URL=${VITE_SERVER_URL} \
-    VITE_WEB_URL=${VITE_WEB_URL}
+    VITE_WEB_URL=${VITE_WEB_URL} \
+    IS_BUILD=true
 
 # TODO: Uncomment this when you have `test:unit` or `test:e2e` scripts defined in your apps/*/package.json or packages/*/package.json files.
-RUN vp run test:unit:run
+RUN DATABASE_URL=postgresql://postgres:postgres@localhost:5432/build \
+    BETTER_AUTH_SECRET=build-time-placeholder-secret-32-chars \
+    vp run test:unit:run
 # RUN vp run test:e2e:run
 
-RUN vp run -v --filter server build
+RUN DATABASE_URL=postgresql://postgres:postgres@localhost:5432/build \
+    BETTER_AUTH_SECRET=build-time-placeholder-secret-32-chars \
+    vp run -v --filter server build
 
 # =========================================================================== #
 
