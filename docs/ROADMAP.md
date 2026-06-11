@@ -42,9 +42,9 @@ Scope:
 
 Current implementation status:
 
-- Done: MVP schema modules, phase-owned migration, shared school contracts, and school setup CRUD for academic years, grade levels, sections, and subjects.
-- Next: school creation bootstrap through a School App procedure so a signed-in user can create a school and become its School Admin, backed by the owner access role.
-- Then: academic terms, staff management, student and guardian records, staff assignments, timetable, attendance, and basic transport assignment.
+- Done: MVP schema modules, phase-owned migration, shared school contracts, school creation bootstrap with active-school selection, school switcher, and school setup CRUD for academic years, academic terms, grade levels, sections, and subjects.
+- Next: staff management for principals and teachers.
+- Then: student and guardian records, enrollment history, subject offerings, staff assignments, timetable, attendance, and basic transport assignment.
 
 Exit criteria:
 
