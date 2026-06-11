@@ -1,4 +1,7 @@
 import {
+  type AcademicTerm,
+  type AcademicTermCreateInput,
+  type AcademicTermUpdateInput,
   type AcademicYear,
   type AcademicYearCreateInput,
   type AcademicYearUpdateInput,
@@ -16,6 +19,7 @@ import {
 } from "@tsu-stack/core/school";
 import { and, asc, db, eq, inArray, ne } from "@tsu-stack/db";
 import {
+  academicTerms,
   academicYears,
   gradeLevels,
   member,
@@ -37,6 +41,20 @@ function academicYearToOutput(row: typeof academicYears.$inferSelect): AcademicY
     id: row.id,
     isCurrent: row.isCurrent,
     name: row.name,
+    startDate: row.startDate,
+    updatedAt: timestampToIso(row.updatedAt)
+  };
+}
+
+function academicTermToOutput(row: typeof academicTerms.$inferSelect): AcademicTerm {
+  return {
+    academicYearId: row.academicYearId,
+    createdAt: timestampToIso(row.createdAt),
+    endDate: row.endDate,
+    id: row.id,
+    kind: row.kind,
+    name: row.name,
+    sortOrder: row.sortOrder,
     startDate: row.startDate,
     updatedAt: timestampToIso(row.updatedAt)
   };
@@ -133,12 +151,24 @@ export async function listSchoolSetup(
   organizationId: string,
   input: SchoolSetupListInput
 ): Promise<Omit<SchoolSetupListOutput, "canManageSetup">> {
-  const [yearRows, gradeRows, subjectRows, sectionRows] = await Promise.all([
+  const [yearRows, termRows, gradeRows, subjectRows, sectionRows] = await Promise.all([
     db
       .select()
       .from(academicYears)
       .where(eq(academicYears.organizationId, organizationId))
       .orderBy(asc(academicYears.startDate), asc(academicYears.name)),
+    db
+      .select()
+      .from(academicTerms)
+      .where(
+        and(
+          eq(academicTerms.organizationId, organizationId),
+          input.academicYearId === undefined
+            ? undefined
+            : eq(academicTerms.academicYearId, input.academicYearId)
+        )
+      )
+      .orderBy(asc(academicTerms.sortOrder), asc(academicTerms.startDate), asc(academicTerms.name)),
     db
       .select()
       .from(gradeLevels)
@@ -164,11 +194,38 @@ export async function listSchoolSetup(
   ]);
 
   return {
+    academicTerms: termRows.map(academicTermToOutput),
     academicYears: yearRows.map(academicYearToOutput),
     gradeLevels: gradeRows.map(gradeLevelToOutput),
     sections: sectionRows.map(sectionToOutput),
     subjects: subjectRows.map(subjectToOutput)
   };
+}
+
+export async function createAcademicTerm(
+  organizationId: string,
+  input: AcademicTermCreateInput
+): Promise<AcademicTerm> {
+  const [row] = await db
+    .insert(academicTerms)
+    .values({ ...input, organizationId })
+    .returning();
+
+  return academicTermToOutput(row);
+}
+
+export async function updateAcademicTerm(
+  organizationId: string,
+  input: AcademicTermUpdateInput
+): Promise<AcademicTerm | null> {
+  const { id, ...values } = input;
+  const [row] = await db
+    .update(academicTerms)
+    .set(values)
+    .where(and(eq(academicTerms.organizationId, organizationId), eq(academicTerms.id, id)))
+    .returning();
+
+  return row ? academicTermToOutput(row) : null;
 }
 
 export async function createAcademicYear(

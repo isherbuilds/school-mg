@@ -7,6 +7,7 @@ import * as queries from "#@/routers/school/setup/queries";
 
 vi.mock("#@/routers/school/setup/queries", () => {
   return {
+    createAcademicTerm: vi.fn(),
     createAcademicYear: vi.fn(),
     createGradeLevel: vi.fn(),
     createSection: vi.fn(),
@@ -15,6 +16,7 @@ vi.mock("#@/routers/school/setup/queries", () => {
     isOrganizationMember: vi.fn(),
     isSchoolSetupManager: vi.fn(),
     listSchoolSetup: vi.fn(),
+    updateAcademicTerm: vi.fn(),
     updateAcademicYear: vi.fn(),
     updateGradeLevel: vi.fn(),
     updateSection: vi.fn(),
@@ -43,6 +45,18 @@ const gradeLevel = {
   updatedAt: "2026-06-10T00:00:00.000Z"
 };
 
+const academicTerm = {
+  academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+  createdAt: "2026-06-10T00:00:00.000Z",
+  endDate: "2026-09-30",
+  id: "018f3ad5-8af8-733f-bb74-33f7f224f128",
+  kind: "semester" as const,
+  name: "Term 1",
+  sortOrder: 1,
+  startDate: "2026-06-01",
+  updatedAt: "2026-06-10T00:00:00.000Z"
+};
+
 describe("school setup router", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,11 +64,13 @@ describe("school setup router", () => {
     vi.mocked(queries.isOrganizationMember).mockResolvedValue(true);
     vi.mocked(queries.isSchoolSetupManager).mockResolvedValue(true);
     vi.mocked(queries.listSchoolSetup).mockResolvedValue({
+      academicTerms: [],
       academicYears: [],
       gradeLevels: [],
       sections: [],
       subjects: []
     });
+    vi.mocked(queries.createAcademicTerm).mockResolvedValue(academicTerm);
     vi.mocked(queries.createGradeLevel).mockResolvedValue(gradeLevel);
   });
 
@@ -68,6 +84,8 @@ describe("school setup router", () => {
     const { appRouter } = await import("#@/routers/index");
 
     expect(appRouter.school.setup.list).toBeDefined();
+    expect(appRouter.school.setup.academicTerms.create).toBeDefined();
+    expect(appRouter.school.setup.academicTerms.update).toBeDefined();
     expect(appRouter.school.setup.academicYears.create).toBeDefined();
     expect(appRouter.school.setup.academicYears.update).toBeDefined();
     expect(appRouter.school.setup.gradeLevels.create).toBeDefined();
@@ -80,6 +98,7 @@ describe("school setup router", () => {
 
   it("allows organization members to list setup records", async () => {
     expect(await call(schoolSetupRouter.list, {}, { context })).toEqual({
+      academicTerms: [],
       academicYears: [],
       canManageSetup: true,
       gradeLevels: [],
@@ -125,6 +144,25 @@ describe("school setup router", () => {
     expect(queries.createGradeLevel).not.toHaveBeenCalled();
   });
 
+  it("rejects academic term mutations for non-manager members", async () => {
+    vi.mocked(queries.isSchoolSetupManager).mockResolvedValue(false);
+
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.create,
+        {
+          academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+          endDate: "2026-09-30",
+          name: "Term 1",
+          startDate: "2026-06-01"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "SCHOOL_SETUP_MANAGEMENT_DENIED" });
+
+    expect(queries.createAcademicTerm).not.toHaveBeenCalled();
+  });
+
   it("maps setup reference constraint failures to typed errors", async () => {
     vi.mocked(queries.createSection).mockRejectedValue({ code: "23503" });
 
@@ -136,6 +174,23 @@ describe("school setup router", () => {
           code: "5A",
           gradeLevelId: "018f3ad5-8af8-733f-bb74-33f7f224f127",
           name: "Class 5 A"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "INVALID_SCHOOL_SETUP_REFERENCE" });
+  });
+
+  it("maps academic term reference failures to typed errors", async () => {
+    vi.mocked(queries.createAcademicTerm).mockRejectedValue({ code: "23503" });
+
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.create,
+        {
+          academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+          endDate: "2026-09-30",
+          name: "Term 1",
+          startDate: "2026-06-01"
         },
         { context }
       )

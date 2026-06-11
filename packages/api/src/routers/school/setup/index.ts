@@ -1,4 +1,7 @@
 import {
+  academicTermCreateInputSchema,
+  academicTermSchema,
+  academicTermUpdateInputSchema,
   academicYearCreateInputSchema,
   academicYearSchema,
   academicYearUpdateInputSchema,
@@ -19,6 +22,7 @@ import { type OrpcContext } from "#@/lib/context/types";
 import { protectedProcedure } from "#@/lib/procedures/factory";
 
 import {
+  createAcademicTerm,
   createAcademicYear,
   createGradeLevel,
   createSection,
@@ -27,6 +31,7 @@ import {
   isOrganizationMember,
   isSchoolSetupManager,
   listSchoolSetup,
+  updateAcademicTerm,
   updateAcademicYear,
   updateGradeLevel,
   updateSection,
@@ -144,6 +149,31 @@ function requireRow<T>(row: T | null, errors: SchoolSetupErrors): T {
 }
 
 export const schoolSetupRouter = {
+  academicTerms: {
+    create: schoolSetupProcedure
+      .route({
+        description: "Create an academic term for the active organization",
+        method: "POST"
+      })
+      .input(academicTermCreateInputSchema)
+      .output(academicTermSchema)
+      .handler(async ({ context, errors, input }) => {
+        const organizationId = await requireSchoolSetupManager(context, errors);
+        return mapDatabaseError(() => createAcademicTerm(organizationId, input), errors);
+      }),
+    update: schoolSetupProcedure
+      .route({
+        description: "Update an academic term for the active organization",
+        method: "PATCH"
+      })
+      .input(academicTermUpdateInputSchema)
+      .output(academicTermSchema)
+      .handler(async ({ context, errors, input }) => {
+        const organizationId = await requireSchoolSetupManager(context, errors);
+        const row = await mapDatabaseError(() => updateAcademicTerm(organizationId, input), errors);
+        return requireRow(row, errors);
+      })
+  },
   academicYears: {
     create: schoolSetupProcedure
       .route({
