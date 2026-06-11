@@ -41,6 +41,9 @@ export function AcademicTermList({
     academicYears.find((year) => year.id === academicYearId)?.name ??
     m.school_setup_page__unknown_academic_year();
 
+  const getTermKindLabel = (kind: AcademicTerm["kind"]) =>
+    termKindOptions.find((option) => option.kind === kind)?.label ?? kind;
+
   const handleUpdate = async (id: string, event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -73,7 +76,7 @@ export function AcademicTermList({
         <ListItem
           isEditing={isEditing(term.id)}
           key={term.id}
-          meta={`${getYearName(term.academicYearId)} / ${term.startDate} - ${term.endDate}`}
+          meta={`${getYearName(term.academicYearId)} / ${getTermKindLabel(term.kind)} / ${term.startDate} - ${term.endDate}`}
           onCancel={onCancel}
           onEdit={canManageSetup ? () => onEdit(term.id) : undefined}
           renderEditForm={() => (
