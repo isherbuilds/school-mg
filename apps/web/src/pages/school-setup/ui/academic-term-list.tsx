@@ -11,6 +11,7 @@ import { getRequiredString } from "@/shared/lib/form-values";
 import { type SchoolSetupQueryResult } from "@/pages/school-setup/api/get-school-setup.query";
 import { useUpdateAcademicTermMutation } from "@/pages/school-setup/api/update-academic-term.mutation";
 import { getSchoolSetupErrorMessage } from "@/pages/school-setup/lib/errors";
+import { getAcademicTermKindOptions } from "@/pages/school-setup/ui/academic-term-kind-options";
 import { NativeSelect } from "@/pages/school-setup/ui/native-select";
 import { ListItem, RecordList, UpdateButton } from "@/pages/school-setup/ui/setup-list-primitives";
 
@@ -34,6 +35,7 @@ export function AcademicTermList({
   onEdit
 }: AcademicTermListProps) {
   const mutation = useUpdateAcademicTermMutation();
+  const termKindOptions = getAcademicTermKindOptions(m);
 
   const getYearName = (academicYearId: string) =>
     academicYears.find((year) => year.id === academicYearId)?.name ??
@@ -80,6 +82,7 @@ export function AcademicTermList({
               isPending={mutation.isPending}
               onSubmit={(event) => void handleUpdate(term.id, event)}
               term={term}
+              termKindOptions={termKindOptions}
             />
           )}
         >
@@ -94,12 +97,14 @@ function AcademicTermEditForm({
   academicYears,
   isPending,
   onSubmit,
-  term
+  term,
+  termKindOptions
 }: {
   academicYears: SchoolSetupQueryResult["academicYears"];
   isPending: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   term: AcademicTerm;
+  termKindOptions: ReturnType<typeof getAcademicTermKindOptions>;
 }) {
   return (
     <form onSubmit={onSubmit}>
@@ -138,10 +143,11 @@ function AcademicTermEditForm({
               {m.school_setup_page__term_kind()}
             </FieldLabel>
             <NativeSelect defaultValue={term.kind} id={`academic-term-${term.id}-kind`} name="kind">
-              <option value="semester">{m.school_setup_page__term_kind_semester()}</option>
-              <option value="trimester">{m.school_setup_page__term_kind_trimester()}</option>
-              <option value="quarter">{m.school_setup_page__term_kind_quarter()}</option>
-              <option value="custom">{m.school_setup_page__term_kind_custom()}</option>
+              {termKindOptions.map((option) => (
+                <option key={option.kind} value={option.kind}>
+                  {option.label}
+                </option>
+              ))}
             </NativeSelect>
           </Field>
         </div>

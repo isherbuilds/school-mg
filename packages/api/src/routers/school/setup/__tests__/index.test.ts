@@ -72,6 +72,7 @@ describe("school setup router", () => {
     });
     vi.mocked(queries.createAcademicTerm).mockResolvedValue(academicTerm);
     vi.mocked(queries.createGradeLevel).mockResolvedValue(gradeLevel);
+    vi.mocked(queries.updateAcademicTerm).mockResolvedValue(academicTerm);
   });
 
   it("is exposed under the school router", async () => {
@@ -191,6 +192,74 @@ describe("school setup router", () => {
           endDate: "2026-09-30",
           name: "Term 1",
           startDate: "2026-06-01"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "INVALID_SCHOOL_SETUP_REFERENCE" });
+  });
+
+  it("updates academic terms for manager members", async () => {
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.update,
+        {
+          endDate: "2026-09-30",
+          id: "018f3ad5-8af8-733f-bb74-33f7f224f128",
+          name: "Term 1",
+          startDate: "2026-06-01"
+        },
+        { context }
+      )
+    ).resolves.toEqual(academicTerm);
+
+    expect(queries.updateAcademicTerm).toHaveBeenCalledWith("org-1", {
+      endDate: "2026-09-30",
+      id: "018f3ad5-8af8-733f-bb74-33f7f224f128",
+      name: "Term 1",
+      startDate: "2026-06-01"
+    });
+  });
+
+  it("maps missing academic terms to typed not found errors", async () => {
+    vi.mocked(queries.updateAcademicTerm).mockResolvedValue(null);
+
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.update,
+        {
+          id: "018f3ad5-8af8-733f-bb74-33f7f224f128",
+          name: "Term 1"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "SCHOOL_SETUP_RECORD_NOT_FOUND" });
+  });
+
+  it("maps academic term update constraint failures to typed errors", async () => {
+    vi.mocked(queries.updateAcademicTerm).mockRejectedValue({ code: "23514" });
+
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.update,
+        {
+          endDate: "2026-09-30",
+          id: "018f3ad5-8af8-733f-bb74-33f7f224f128",
+          startDate: "2026-06-01"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "INVALID_SCHOOL_SETUP_DATES" });
+  });
+
+  it("maps academic term update reference failures to typed errors", async () => {
+    vi.mocked(queries.updateAcademicTerm).mockRejectedValue({ code: "23503" });
+
+    await expect(
+      call(
+        schoolSetupRouter.academicTerms.update,
+        {
+          academicYearId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
+          id: "018f3ad5-8af8-733f-bb74-33f7f224f128"
         },
         { context }
       )
