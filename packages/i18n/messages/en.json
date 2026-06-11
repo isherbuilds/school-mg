@@ -144,5 +144,12 @@
   "school_setup_page__core": "Core",
   "school_setup_page__academic_year_name_placeholder": "2026-2027",
   "school_setup_page__read_only_title": "Setup actions unavailable",
-  "school_setup_page__read_only_description": "You can view setup records, but only owners and principals can manage them."
+  "school_setup_page__read_only_description": "You can view setup records, but only owners and principals can manage them.",
+  "school_setup_page__edit": "Edit",
+  "school_setup_page__cancel_edit": "Cancel edit",
+  "school_setup_page__save_changes": "Save Changes",
+  "school_setup_page__academic_year_updated": "Academic year updated.",
+  "school_setup_page__grade_level_updated": "Grade level updated.",
+  "school_setup_page__subject_updated": "Subject updated.",
+  "school_setup_page__section_updated": "Section updated."
 }
