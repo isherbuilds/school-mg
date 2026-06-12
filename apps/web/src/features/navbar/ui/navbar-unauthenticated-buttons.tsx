@@ -15,7 +15,7 @@ export function NavbarUnauthenticatedButtons() {
           {m.navbar__sign_in()}
         </Link>
       </Button>
-      <Link to="/create-an-account" search={{ redirect }}>
+      <Link to="/sign-in" search={{ redirect }}>
         <Button light="skeuomorphic" size="sm">
           {m.navbar__get_started()}
         </Button>
