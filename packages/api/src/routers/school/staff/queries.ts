@@ -6,7 +6,7 @@ import {
   type StaffMemberUpdateInput,
   type StaffStatus
 } from "@tsu-stack/core/school";
-import { and, asc, db, desc, eq, inArray } from "@tsu-stack/db";
+import { and, asc, db, desc, eq, inArray, sql } from "@tsu-stack/db";
 import {
   invitation,
   member,
@@ -30,6 +30,10 @@ function timestampToIso(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 }
 
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 function actorStatusFromStaffStatus(status: StaffStatus): "active" | "archived" {
   return status === "inactive" ? "archived" : "active";
 }
@@ -46,7 +50,7 @@ export function staffMemberToOutput(
   pendingInvitationByEmail: Map<string, string>
 ): StaffMember {
   const invitationId = row.actor.email
-    ? (pendingInvitationByEmail.get(row.actor.email) ?? null)
+    ? (pendingInvitationByEmail.get(normalizeEmail(row.actor.email)) ?? null)
     : null;
   const hasLinkedAccess =
     row.actor.userId !== null &&
@@ -89,9 +93,13 @@ async function hydrateStaffRows(organizationId: string, rows: StaffRow[]): Promi
   const userIds = rows
     .map((row) => row.actor.userId)
     .filter((userId): userId is string => userId !== null);
-  const emails = rows
-    .map((row) => row.actor.email)
-    .filter((email): email is string => email !== null);
+  const normalizedEmails = [
+    ...new Set(
+      rows
+        .map((row) => (row.actor.email === null ? null : normalizeEmail(row.actor.email)))
+        .filter((email): email is string => email !== null && email.length > 0)
+    )
+  ];
 
   const [roleRows, memberRows, invitationRows] = await Promise.all([
     db
@@ -113,7 +121,7 @@ async function hydrateStaffRows(organizationId: string, rows: StaffRow[]): Promi
           .select({ userId: member.userId })
           .from(member)
           .where(and(eq(member.organizationId, organizationId), inArray(member.userId, userIds))),
-    emails.length === 0
+    normalizedEmails.length === 0
       ? Promise.resolve([])
       : db
           .select({
@@ -126,7 +134,7 @@ async function hydrateStaffRows(organizationId: string, rows: StaffRow[]): Promi
             and(
               eq(invitation.organizationId, organizationId),
               eq(invitation.status, "pending"),
-              inArray(invitation.email, emails)
+              inArray(sql`lower(trim(${invitation.email}))`, normalizedEmails)
             )
           )
           .orderBy(desc(invitation.createdAt))
@@ -151,8 +159,9 @@ async function hydrateStaffRows(organizationId: string, rows: StaffRow[]): Promi
   const memberUserIds = new Set(memberRows.map((row) => row.userId));
   const pendingInvitationByEmail = new Map<string, string>();
   for (const row of invitationRows) {
-    if (!pendingInvitationByEmail.has(row.email)) {
-      pendingInvitationByEmail.set(row.email, row.id);
+    const normalizedEmail = normalizeEmail(row.email);
+    if (!pendingInvitationByEmail.has(normalizedEmail)) {
+      pendingInvitationByEmail.set(normalizedEmail, row.id);
     }
   }
 

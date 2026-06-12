@@ -1,4 +1,4 @@
-import { defineRelationsPart } from "drizzle-orm";
+import { defineRelationsPart, sql } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -125,7 +125,10 @@ export const invitation = pgTable(
   },
   (table) => [
     index("invitation_email_idx").on(table.email),
-    index("invitation_organizationId_idx").on(table.organizationId)
+    index("invitation_organizationId_idx").on(table.organizationId),
+    uniqueIndex("invitation_pending_email_uidx")
+      .on(table.organizationId, sql`lower(trim(${table.email}))`)
+      .where(sql`${table.status} = 'pending'`)
   ]
 );
 

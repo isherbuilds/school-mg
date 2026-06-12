@@ -46,4 +46,33 @@ describe("staff query mapping", () => {
       userId: "staff-user-1"
     });
   });
+
+  it("matches pending invitation emails after normalizing actor email case", async () => {
+    process.env.BETTER_AUTH_SECRET = "test-secret-with-enough-length-123456";
+    process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/test";
+    process.env.NODE_ENV = "development";
+    process.env.VITE_SERVER_URL = "http://localhost:5000/server";
+    process.env.VITE_WEB_URL = "http://localhost:3000/web";
+
+    const { staffMemberToOutput } = await import("#@/routers/school/staff/queries");
+
+    expect(
+      staffMemberToOutput(
+        {
+          ...staffRow,
+          actor: {
+            ...staffRow.actor,
+            email: " Teacher@Example.com "
+          }
+        },
+        new Map(),
+        new Set(),
+        new Set(),
+        new Map([["teacher@example.com", "invitation-1"]])
+      )
+    ).toMatchObject({
+      accessStatus: "pending",
+      invitationId: "invitation-1"
+    });
+  });
 });
