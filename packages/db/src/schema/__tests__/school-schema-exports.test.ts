@@ -29,7 +29,7 @@ import {
 } from "#@/schema/index";
 
 const academicMvpMigration = "20260609181709_zippy_luke_cage";
-const memberCentricStaffMigration = "20260612135711_chilly_sheva_callister";
+const memberCentricStaffMigration = "20260612153413_luxuriant_tusk";
 
 function readAcademicMvpMigration() {
   return readFileSync(
@@ -142,17 +142,17 @@ describe("school schema exports", () => {
     expect(migration).toContain("attendance_records_marked_by_member_org_fk");
   });
 
-  it("backfills staff assignment member ids before enforcing required member scope", () => {
+  it("keeps the member-centric staff migration free of legacy data backfills", () => {
     const migration = readMemberCentricStaffMigration();
 
-    expect(migration).toContain('ALTER TABLE "staff_assignments" ADD COLUMN "member_id" text;');
-    expect(migration).toContain('UPDATE "staff_assignments"');
     expect(migration).toContain(
-      'ALTER TABLE "staff_assignments" ALTER COLUMN "member_id" SET NOT NULL'
-    );
-    expect(migration).not.toContain(
       'ALTER TABLE "staff_assignments" ADD COLUMN "member_id" text NOT NULL'
     );
+    expect(migration).not.toContain('INSERT INTO "member"');
+    expect(migration).not.toContain('UPDATE "staff_assignments"');
+    expect(migration).not.toContain('UPDATE "attendance_records"');
+    expect(migration).not.toContain('UPDATE "attendance_sessions"');
+    expect(migration).not.toContain('UPDATE "timetable_slots"');
   });
 
   it("keeps staff lifecycle fields off the auth member and invitation rows", () => {
