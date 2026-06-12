@@ -211,6 +211,64 @@ export function AcceptInvitationForm({
     );
   }
 
+  if (user) {
+    return (
+      <Container className={cn("flex max-w-md flex-col gap-6", className)} {...props}>
+        <FieldGroup>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Link href="/" className="flex flex-col items-center gap-2 font-medium">
+              <LogoIcon className="flex size-8 items-center justify-center rounded-md" />
+              <span className="sr-only">{appConfig.site.shortName}</span>
+            </Link>
+            <h1 className="text-xl font-bold">{m.staff_invitations__accept_title()}</h1>
+            <FieldDescription>
+              {m.staff_invitations__accept_description({
+                schoolName: previewQuery.data.organizationName
+              })}
+            </FieldDescription>
+          </div>
+
+          <Field>
+            <FieldContent>
+              <FieldLabel htmlFor="signed-in-invitation-email">{m.auth__email_label()}</FieldLabel>
+              <FieldDescription>{m.staff_invitations__locked_email_description()}</FieldDescription>
+            </FieldContent>
+            <div className="relative">
+              <LockKeyhole
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                className="pl-9"
+                disabled
+                id="signed-in-invitation-email"
+                readOnly
+                type="email"
+                value={previewQuery.data.email}
+              />
+            </div>
+          </Field>
+
+          <Field>
+            <Button
+              disabled={acceptInvitationMutation.isPending}
+              light="skeuomorphic"
+              onClick={() => void handleExistingAccount()}
+              type="button"
+            >
+              {acceptInvitationMutation.isPending ? (
+                <Spinner data-icon aria-hidden="true" />
+              ) : (
+                <UserCheck data-icon aria-hidden="true" />
+              )}
+              {m.staff_invitations__use_existing_account()}
+            </Button>
+          </Field>
+        </FieldGroup>
+      </Container>
+    );
+  }
+
   return (
     <Container className={cn("flex max-w-md flex-col gap-6", className)} {...props}>
       <form
