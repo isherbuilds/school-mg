@@ -36,7 +36,7 @@ export function useAcceptInvitationMutation() {
 
       return result.data;
     },
-    onSuccess: async () => {
+    onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: schoolAccessQueryKeys.list() }),
         queryClient.invalidateQueries({ queryKey: staffInvitationQueryKeys.currentUser() })
