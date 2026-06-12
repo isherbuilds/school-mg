@@ -7,6 +7,7 @@ import * as queries from "#@/routers/school/bootstrap/queries";
 
 vi.mock("#@/routers/school/bootstrap/queries", () => {
   return {
+    canCreateSchoolForUser: vi.fn(),
     createSchoolForUser: vi.fn(),
     getActiveSchoolIdForSession: vi.fn(),
     listSchoolsForUser: vi.fn(),
@@ -79,6 +80,7 @@ describe("school bootstrap router", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(queries.canCreateSchoolForUser).mockResolvedValue(true);
     vi.mocked(queries.createSchoolForUser).mockResolvedValue({
       activeSchool
     });
@@ -126,6 +128,27 @@ describe("school bootstrap router", () => {
       userId: "user-1",
       userName: "School Admin"
     });
+  });
+
+  it("rejects school creation for non-root users", async () => {
+    vi.mocked(queries.canCreateSchoolForUser).mockResolvedValue(false);
+
+    await expect(
+      call(
+        schoolBootstrapRouter.create,
+        {
+          name: "Spring Valley School",
+          slug: "spring-valley"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({
+      code: "SCHOOL_CREATION_DENIED",
+      message: "Only root bootstrap users can create schools."
+    });
+
+    expect(queries.canCreateSchoolForUser).toHaveBeenCalledWith("admin@example.com");
+    expect(queries.createSchoolForUser).not.toHaveBeenCalled();
   });
 
   it("maps duplicate school slug conflicts to a typed error", async () => {

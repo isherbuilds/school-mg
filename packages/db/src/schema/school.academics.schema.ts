@@ -12,8 +12,8 @@ import {
   uuid
 } from "drizzle-orm/pg-core";
 
-import { organization } from "#@/schema/auth.schema";
-import { staffProfiles, students } from "#@/schema/school.people.schema";
+import { member, organization } from "#@/schema/auth.schema";
+import { students } from "#@/schema/school.people.schema";
 import {
   enrollmentStatusEnum,
   schoolShiftEnum,
@@ -319,9 +319,9 @@ export const staffAssignments = pgTable(
       .references(() => organization.id, { onDelete: "cascade" }),
     role: staffAssignmentRoleEnum("role").notNull(),
     sectionId: uuid("section_id").references(() => sections.id, { onDelete: "cascade" }),
-    staffProfileId: uuid("staff_profile_id")
+    memberId: text("member_id")
       .notNull()
-      .references(() => staffProfiles.id, { onDelete: "cascade" }),
+      .references(() => member.id, { onDelete: "cascade" }),
     startDate: date("start_date"),
     subjectOfferingId: uuid("subject_offering_id").references(() => subjectOfferings.id, {
       onDelete: "cascade"
@@ -331,30 +331,24 @@ export const staffAssignments = pgTable(
   (table) => [
     index("staff_assignments_grade_idx").on(table.organizationId, table.gradeLevelId),
     index("staff_assignments_section_idx").on(table.organizationId, table.sectionId),
-    index("staff_assignments_staff_profile_idx").on(table.organizationId, table.staffProfileId),
+    index("staff_assignments_member_idx").on(table.organizationId, table.memberId),
     uniqueIndex("staff_assignments_grade_scope_uidx")
       .on(
         table.organizationId,
         table.academicYearId,
-        table.staffProfileId,
+        table.memberId,
         table.role,
         table.gradeLevelId
       )
       .where(sql`${table.active} = true AND ${table.gradeLevelId} IS NOT NULL`),
     uniqueIndex("staff_assignments_section_scope_uidx")
-      .on(
-        table.organizationId,
-        table.academicYearId,
-        table.staffProfileId,
-        table.role,
-        table.sectionId
-      )
+      .on(table.organizationId, table.academicYearId, table.memberId, table.role, table.sectionId)
       .where(sql`${table.active} = true AND ${table.sectionId} IS NOT NULL`),
     uniqueIndex("staff_assignments_subject_scope_uidx")
       .on(
         table.organizationId,
         table.academicYearId,
-        table.staffProfileId,
+        table.memberId,
         table.role,
         table.subjectOfferingId
       )
@@ -373,9 +367,9 @@ export const staffAssignments = pgTable(
       name: "staff_assignments_year_org_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [table.organizationId, table.staffProfileId],
-      foreignColumns: [staffProfiles.organizationId, staffProfiles.id],
-      name: "staff_assignments_staff_profile_org_fk"
+      columns: [table.organizationId, table.memberId],
+      foreignColumns: [member.organizationId, member.id],
+      name: "staff_assignments_member_org_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [table.organizationId, table.gradeLevelId],

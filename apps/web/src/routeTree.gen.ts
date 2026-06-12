@@ -22,8 +22,11 @@ import { Route as Char123LocaleChar125rootLayoutTermsOfServiceIndexRouteImport }
 import { Route as Char123LocaleChar125rootLayoutPrivacyPolicyIndexRouteImport } from './routes/{-$locale}/(root-layout)/privacy-policy/index'
 import { Route as Char123LocaleChar125rootLayoutPlaygroundIndexRouteImport } from './routes/{-$locale}/(root-layout)/playground/index'
 import { Route as Char123LocaleChar125rootLayoutErrorIndexRouteImport } from './routes/{-$locale}/(root-layout)/error/index'
+import { Route as Char123LocaleChar125rootLayoutauthStaffIndexRouteImport } from './routes/{-$locale}/(root-layout)/(auth)/staff/index'
 import { Route as Char123LocaleChar125rootLayoutauthSchoolSetupIndexRouteImport } from './routes/{-$locale}/(root-layout)/(auth)/school-setup/index'
+import { Route as Char123LocaleChar125rootLayoutauthInvitationsIndexRouteImport } from './routes/{-$locale}/(root-layout)/(auth)/invitations/index'
 import { Route as Char123LocaleChar125rootLayoutauthDashboardIndexRouteImport } from './routes/{-$locale}/(root-layout)/(auth)/dashboard/index'
+import { Route as Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRouteImport } from './routes/{-$locale}/(centered-layout)/accept-invitation/$invitationId/index'
 import { Route as Char123LocaleChar125centeredLayoutguestSignInIndexRouteImport } from './routes/{-$locale}/(centered-layout)/(guest)/sign-in/index'
 import { Route as Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRouteImport } from './routes/{-$locale}/(centered-layout)/(guest)/create-an-account/index'
 import { Route as Char123LocaleChar125rootLayoutauthSchoolsNewIndexRouteImport } from './routes/{-$locale}/(root-layout)/(auth)/schools/new/index'
@@ -99,10 +102,22 @@ const Char123LocaleChar125rootLayoutErrorIndexRoute =
     path: '/error/',
     getParentRoute: () => Char123LocaleChar125rootLayoutRouteRoute,
   } as any)
+const Char123LocaleChar125rootLayoutauthStaffIndexRoute =
+  Char123LocaleChar125rootLayoutauthStaffIndexRouteImport.update({
+    id: '/staff/',
+    path: '/staff/',
+    getParentRoute: () => Char123LocaleChar125rootLayoutauthRouteRoute,
+  } as any)
 const Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute =
   Char123LocaleChar125rootLayoutauthSchoolSetupIndexRouteImport.update({
     id: '/school-setup/',
     path: '/school-setup/',
+    getParentRoute: () => Char123LocaleChar125rootLayoutauthRouteRoute,
+  } as any)
+const Char123LocaleChar125rootLayoutauthInvitationsIndexRoute =
+  Char123LocaleChar125rootLayoutauthInvitationsIndexRouteImport.update({
+    id: '/invitations/',
+    path: '/invitations/',
     getParentRoute: () => Char123LocaleChar125rootLayoutauthRouteRoute,
   } as any)
 const Char123LocaleChar125rootLayoutauthDashboardIndexRoute =
@@ -111,6 +126,14 @@ const Char123LocaleChar125rootLayoutauthDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => Char123LocaleChar125rootLayoutauthRouteRoute,
   } as any)
+const Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute =
+  Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRouteImport.update(
+    {
+      id: '/accept-invitation/$invitationId/',
+      path: '/accept-invitation/$invitationId/',
+      getParentRoute: () => Char123LocaleChar125centeredLayoutRouteRoute,
+    } as any,
+  )
 const Char123LocaleChar125centeredLayoutguestSignInIndexRoute =
   Char123LocaleChar125centeredLayoutguestSignInIndexRouteImport.update({
     id: '/sign-in/',
@@ -144,8 +167,11 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/terms-of-service/': typeof Char123LocaleChar125rootLayoutTermsOfServiceIndexRoute
   '/{-$locale}/create-an-account/': typeof Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRoute
   '/{-$locale}/sign-in/': typeof Char123LocaleChar125centeredLayoutguestSignInIndexRoute
+  '/{-$locale}/accept-invitation/$invitationId/': typeof Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute
   '/{-$locale}/dashboard/': typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  '/{-$locale}/invitations/': typeof Char123LocaleChar125rootLayoutauthInvitationsIndexRoute
   '/{-$locale}/school-setup/': typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
+  '/{-$locale}/staff/': typeof Char123LocaleChar125rootLayoutauthStaffIndexRoute
   '/{-$locale}/schools/new/': typeof Char123LocaleChar125rootLayoutauthSchoolsNewIndexRoute
 }
 export interface FileRoutesByTo {
@@ -159,8 +185,11 @@ export interface FileRoutesByTo {
   '/{-$locale}/terms-of-service': typeof Char123LocaleChar125rootLayoutTermsOfServiceIndexRoute
   '/{-$locale}/create-an-account': typeof Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRoute
   '/{-$locale}/sign-in': typeof Char123LocaleChar125centeredLayoutguestSignInIndexRoute
+  '/{-$locale}/accept-invitation/$invitationId': typeof Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute
   '/{-$locale}/dashboard': typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  '/{-$locale}/invitations': typeof Char123LocaleChar125rootLayoutauthInvitationsIndexRoute
   '/{-$locale}/school-setup': typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
+  '/{-$locale}/staff': typeof Char123LocaleChar125rootLayoutauthStaffIndexRoute
   '/{-$locale}/schools/new': typeof Char123LocaleChar125rootLayoutauthSchoolsNewIndexRoute
 }
 export interface FileRoutesById {
@@ -180,8 +209,11 @@ export interface FileRoutesById {
   '/{-$locale}/(root-layout)/terms-of-service/': typeof Char123LocaleChar125rootLayoutTermsOfServiceIndexRoute
   '/{-$locale}/(centered-layout)/(guest)/create-an-account/': typeof Char123LocaleChar125centeredLayoutguestCreateAnAccountIndexRoute
   '/{-$locale}/(centered-layout)/(guest)/sign-in/': typeof Char123LocaleChar125centeredLayoutguestSignInIndexRoute
+  '/{-$locale}/(centered-layout)/accept-invitation/$invitationId/': typeof Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute
   '/{-$locale}/(root-layout)/(auth)/dashboard/': typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  '/{-$locale}/(root-layout)/(auth)/invitations/': typeof Char123LocaleChar125rootLayoutauthInvitationsIndexRoute
   '/{-$locale}/(root-layout)/(auth)/school-setup/': typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
+  '/{-$locale}/(root-layout)/(auth)/staff/': typeof Char123LocaleChar125rootLayoutauthStaffIndexRoute
   '/{-$locale}/(root-layout)/(auth)/schools/new/': typeof Char123LocaleChar125rootLayoutauthSchoolsNewIndexRoute
 }
 export interface FileRouteTypes {
@@ -198,8 +230,11 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-of-service/'
     | '/{-$locale}/create-an-account/'
     | '/{-$locale}/sign-in/'
+    | '/{-$locale}/accept-invitation/$invitationId/'
     | '/{-$locale}/dashboard/'
+    | '/{-$locale}/invitations/'
     | '/{-$locale}/school-setup/'
+    | '/{-$locale}/staff/'
     | '/{-$locale}/schools/new/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -213,8 +248,11 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-of-service'
     | '/{-$locale}/create-an-account'
     | '/{-$locale}/sign-in'
+    | '/{-$locale}/accept-invitation/$invitationId'
     | '/{-$locale}/dashboard'
+    | '/{-$locale}/invitations'
     | '/{-$locale}/school-setup'
+    | '/{-$locale}/staff'
     | '/{-$locale}/schools/new'
   id:
     | '__root__'
@@ -233,8 +271,11 @@ export interface FileRouteTypes {
     | '/{-$locale}/(root-layout)/terms-of-service/'
     | '/{-$locale}/(centered-layout)/(guest)/create-an-account/'
     | '/{-$locale}/(centered-layout)/(guest)/sign-in/'
+    | '/{-$locale}/(centered-layout)/accept-invitation/$invitationId/'
     | '/{-$locale}/(root-layout)/(auth)/dashboard/'
+    | '/{-$locale}/(root-layout)/(auth)/invitations/'
     | '/{-$locale}/(root-layout)/(auth)/school-setup/'
+    | '/{-$locale}/(root-layout)/(auth)/staff/'
     | '/{-$locale}/(root-layout)/(auth)/schools/new/'
   fileRoutesById: FileRoutesById
 }
@@ -338,11 +379,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125rootLayoutErrorIndexRouteImport
       parentRoute: typeof Char123LocaleChar125rootLayoutRouteRoute
     }
+    '/{-$locale}/(root-layout)/(auth)/staff/': {
+      id: '/{-$locale}/(root-layout)/(auth)/staff/'
+      path: '/staff'
+      fullPath: '/{-$locale}/staff/'
+      preLoaderRoute: typeof Char123LocaleChar125rootLayoutauthStaffIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125rootLayoutauthRouteRoute
+    }
     '/{-$locale}/(root-layout)/(auth)/school-setup/': {
       id: '/{-$locale}/(root-layout)/(auth)/school-setup/'
       path: '/school-setup'
       fullPath: '/{-$locale}/school-setup/'
       preLoaderRoute: typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125rootLayoutauthRouteRoute
+    }
+    '/{-$locale}/(root-layout)/(auth)/invitations/': {
+      id: '/{-$locale}/(root-layout)/(auth)/invitations/'
+      path: '/invitations'
+      fullPath: '/{-$locale}/invitations/'
+      preLoaderRoute: typeof Char123LocaleChar125rootLayoutauthInvitationsIndexRouteImport
       parentRoute: typeof Char123LocaleChar125rootLayoutauthRouteRoute
     }
     '/{-$locale}/(root-layout)/(auth)/dashboard/': {
@@ -351,6 +406,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/dashboard/'
       preLoaderRoute: typeof Char123LocaleChar125rootLayoutauthDashboardIndexRouteImport
       parentRoute: typeof Char123LocaleChar125rootLayoutauthRouteRoute
+    }
+    '/{-$locale}/(centered-layout)/accept-invitation/$invitationId/': {
+      id: '/{-$locale}/(centered-layout)/accept-invitation/$invitationId/'
+      path: '/accept-invitation/$invitationId'
+      fullPath: '/{-$locale}/accept-invitation/$invitationId/'
+      preLoaderRoute: typeof Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125centeredLayoutRouteRoute
     }
     '/{-$locale}/(centered-layout)/(guest)/sign-in/': {
       id: '/{-$locale}/(centered-layout)/(guest)/sign-in/'
@@ -396,12 +458,15 @@ const Char123LocaleChar125centeredLayoutguestRouteRouteWithChildren =
 
 interface Char123LocaleChar125centeredLayoutRouteRouteChildren {
   Char123LocaleChar125centeredLayoutguestRouteRoute: typeof Char123LocaleChar125centeredLayoutguestRouteRouteWithChildren
+  Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute: typeof Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute
 }
 
 const Char123LocaleChar125centeredLayoutRouteRouteChildren: Char123LocaleChar125centeredLayoutRouteRouteChildren =
   {
     Char123LocaleChar125centeredLayoutguestRouteRoute:
       Char123LocaleChar125centeredLayoutguestRouteRouteWithChildren,
+    Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute:
+      Char123LocaleChar125centeredLayoutAcceptInvitationInvitationIdIndexRoute,
   }
 
 const Char123LocaleChar125centeredLayoutRouteRouteWithChildren =
@@ -411,7 +476,9 @@ const Char123LocaleChar125centeredLayoutRouteRouteWithChildren =
 
 interface Char123LocaleChar125rootLayoutauthRouteRouteChildren {
   Char123LocaleChar125rootLayoutauthDashboardIndexRoute: typeof Char123LocaleChar125rootLayoutauthDashboardIndexRoute
+  Char123LocaleChar125rootLayoutauthInvitationsIndexRoute: typeof Char123LocaleChar125rootLayoutauthInvitationsIndexRoute
   Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute: typeof Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute
+  Char123LocaleChar125rootLayoutauthStaffIndexRoute: typeof Char123LocaleChar125rootLayoutauthStaffIndexRoute
   Char123LocaleChar125rootLayoutauthSchoolsNewIndexRoute: typeof Char123LocaleChar125rootLayoutauthSchoolsNewIndexRoute
 }
 
@@ -419,8 +486,12 @@ const Char123LocaleChar125rootLayoutauthRouteRouteChildren: Char123LocaleChar125
   {
     Char123LocaleChar125rootLayoutauthDashboardIndexRoute:
       Char123LocaleChar125rootLayoutauthDashboardIndexRoute,
+    Char123LocaleChar125rootLayoutauthInvitationsIndexRoute:
+      Char123LocaleChar125rootLayoutauthInvitationsIndexRoute,
     Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute:
       Char123LocaleChar125rootLayoutauthSchoolSetupIndexRoute,
+    Char123LocaleChar125rootLayoutauthStaffIndexRoute:
+      Char123LocaleChar125rootLayoutauthStaffIndexRoute,
     Char123LocaleChar125rootLayoutauthSchoolsNewIndexRoute:
       Char123LocaleChar125rootLayoutauthSchoolsNewIndexRoute,
   }

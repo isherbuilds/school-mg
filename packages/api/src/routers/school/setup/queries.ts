@@ -24,8 +24,6 @@ import {
   gradeLevels,
   member,
   session,
-  schoolActorRoles,
-  schoolActors,
   sections,
   subjects
 } from "@tsu-stack/db/schema";
@@ -159,21 +157,14 @@ export async function isSchoolSetupManager(
   userId: string
 ): Promise<boolean> {
   const rows = await db
-    .select({ id: schoolActorRoles.id })
-    .from(schoolActorRoles)
-    .innerJoin(
-      schoolActors,
-      and(
-        eq(schoolActors.organizationId, schoolActorRoles.organizationId),
-        eq(schoolActors.id, schoolActorRoles.actorId)
-      )
-    )
+    .select({ id: member.id })
+    .from(member)
     .where(
       and(
-        eq(schoolActorRoles.organizationId, organizationId),
-        eq(schoolActorRoles.active, true),
-        inArray(schoolActorRoles.role, ["owner", "principal"]),
-        eq(schoolActors.userId, userId)
+        eq(member.organizationId, organizationId),
+        eq(member.userId, userId),
+        inArray(member.staffStatus, ["active", "on_leave"]),
+        inArray(member.schoolRole, ["owner", "principal"])
       )
     )
     .limit(1);

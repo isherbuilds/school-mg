@@ -11,13 +11,11 @@ import {
   calendarEvents,
   gradeLevels,
   guardians,
+  member,
   organization,
   schoolAccessRoleEnum,
-  schoolActorRoles,
-  schoolActors,
   sections,
   staffAssignments,
-  staffProfiles,
   studentEnrollments,
   studentRelationships,
   students,
@@ -31,6 +29,7 @@ import {
 } from "#@/schema/index";
 
 const academicMvpMigration = "20260609181709_zippy_luke_cage";
+const memberCentricStaffMigration = "20260612153413_luxuriant_tusk";
 
 function readAcademicMvpMigration() {
   return readFileSync(
@@ -39,12 +38,17 @@ function readAcademicMvpMigration() {
   );
 }
 
+function readMemberCentricStaffMigration() {
+  return readFileSync(
+    new URL(`../../../migrations/${memberCentricStaffMigration}/migration.sql`, import.meta.url),
+    "utf8"
+  );
+}
+
 describe("school schema exports", () => {
   it("exports organization baseline and academic MVP tables", () => {
     expect(getTableName(organization)).toBe("organization");
-    expect(getTableName(schoolActors)).toBe("school_actors");
-    expect(getTableName(schoolActorRoles)).toBe("school_actor_roles");
-    expect(getTableName(staffProfiles)).toBe("staff_profiles");
+    expect(getTableName(member)).toBe("member");
     expect(getTableName(students)).toBe("students");
     expect(getTableName(guardians)).toBe("guardians");
     expect(getTableName(studentRelationships)).toBe("student_relationships");
@@ -96,11 +100,12 @@ describe("school schema exports", () => {
   });
 
   it("uses partial unique indexes for nullable staff assignment scopes", () => {
-    const migration = readAcademicMvpMigration();
+    const migration = readMemberCentricStaffMigration();
 
     expect(migration).toContain("staff_assignments_grade_scope_uidx");
     expect(migration).toContain("staff_assignments_section_scope_uidx");
     expect(migration).toContain("staff_assignments_subject_scope_uidx");
+    expect(migration).toContain('"member_id"');
     expect(migration).toContain('WHERE "active" = true');
   });
 
@@ -128,13 +133,37 @@ describe("school schema exports", () => {
     expect(migration).toContain('WHERE "is_current" = true');
   });
 
-  it("scopes optional actor references to the same tenant", () => {
-    const migration = readAcademicMvpMigration();
+  it("scopes optional member references to the same tenant", () => {
+    const migration = readMemberCentricStaffMigration();
 
-    expect(migration).toContain("guardians_actor_org_fk");
-    expect(migration).toContain("timetable_slots_teacher_actor_org_fk");
-    expect(migration).toContain("attendance_sessions_taken_by_actor_org_fk");
-    expect(migration).toContain("attendance_records_marked_by_actor_org_fk");
+    expect(migration).toContain("member_org_id_uidx");
+    expect(migration).toContain("timetable_slots_teacher_member_org_fk");
+    expect(migration).toContain("attendance_sessions_taken_by_member_org_fk");
+    expect(migration).toContain("attendance_records_marked_by_member_org_fk");
+  });
+
+  it("keeps the member-centric staff migration free of legacy data backfills", () => {
+    const migration = readMemberCentricStaffMigration();
+
+    expect(migration).toContain(
+      'ALTER TABLE "staff_assignments" ADD COLUMN "member_id" text NOT NULL'
+    );
+    expect(migration).not.toContain('INSERT INTO "member"');
+    expect(migration).not.toContain('UPDATE "staff_assignments"');
+    expect(migration).not.toContain('UPDATE "attendance_records"');
+    expect(migration).not.toContain('UPDATE "attendance_sessions"');
+    expect(migration).not.toContain('UPDATE "timetable_slots"');
+  });
+
+  it("keeps staff lifecycle fields off the auth member and invitation rows", () => {
+    const migration = readMemberCentricStaffMigration();
+
+    expect(migration).not.toContain('ALTER TABLE "member" ADD COLUMN "joined_on"');
+    expect(migration).not.toContain('ALTER TABLE "member" ADD COLUMN "left_on"');
+    expect(migration).not.toContain('ALTER TABLE "member" ADD COLUMN "metadata" jsonb');
+    expect(migration).not.toContain('ALTER TABLE "invitation" ADD COLUMN "joined_on"');
+    expect(migration).not.toContain('ALTER TABLE "invitation" ADD COLUMN "left_on"');
+    expect(migration).not.toContain('ALTER TABLE "invitation" ADD COLUMN "metadata" jsonb');
   });
 
   it("does not mix nullable SET NULL with tenant-scoped composite foreign keys", () => {

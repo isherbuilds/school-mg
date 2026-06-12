@@ -16,6 +16,7 @@ import { type ContentfulStatusCode } from "hono/utils/http-status";
 import { createContext } from "@tsu-stack/api/lib/context/hono/create-context";
 import { appRouter } from "@tsu-stack/api/routers/index";
 import { auth } from "@tsu-stack/auth/index";
+import { invitationIdHeader, signupIntentHeader } from "@tsu-stack/auth/signup-headers";
 import { migrateDatabase } from "@tsu-stack/db";
 import { ENV_SERVER } from "@tsu-stack/env/server/env";
 import { log, parseError } from "@tsu-stack/logger/server";
@@ -36,8 +37,14 @@ export const app = new Hono<HonoLogVariables>().basePath(
 app.use(
   "/*",
   cors({
-    allowHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Request-Id",
+      signupIntentHeader,
+      invitationIdHeader
+    ],
+    allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
     credentials: true,
     origin: [new URL(ENV_SERVER.VITE_WEB_URL).origin]
   })

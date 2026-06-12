@@ -12,6 +12,9 @@ services:
       - "VITE_WEB_URL=${VITE_WEB_URL:-http://localhost:3000}"
       - "DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
       - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
+      - "ROOT_BOOTSTRAP_EMAILS=${ROOT_BOOTSTRAP_EMAILS:-}"
+      - "RESEND_API_KEY=${RESEND_API_KEY:-}"
+      - "EMAIL_FROM=${EMAIL_FROM:-}"
     networks:
       - tsu-stack-network
     depends_on:
@@ -28,8 +31,6 @@ services:
         - "SOURCE_COMMIT=${SOURCE_COMMIT}"
         - "VITE_SERVER_URL=${VITE_SERVER_URL:-http://localhost:5000}"
         - "VITE_WEB_URL=${VITE_WEB_URL:-http://localhost:3000}"
-        - "DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
-        - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
     ports:
       - "${SERVER_PORT:-5000}:5000"
     environment:
@@ -37,6 +38,9 @@ services:
       - "VITE_WEB_URL=${VITE_WEB_URL:-http://localhost:3000}"
       - "DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
       - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
+      - "ROOT_BOOTSTRAP_EMAILS=${ROOT_BOOTSTRAP_EMAILS:-}"
+      - "RESEND_API_KEY=${RESEND_API_KEY:-}"
+      - "EMAIL_FROM=${EMAIL_FROM:-}"
       - "ENABLE_OPEN_API_DOCS=${ENABLE_OPEN_API_DOCS:-false}"
     healthcheck:
       test:
@@ -64,8 +68,6 @@ services:
         - "VITE_WEB_URL=${VITE_WEB_URL:-http://localhost:3000}"
         - "VITE_IMGPROXY_URL=${VITE_IMGPROXY_URL:-}"
         - "VITE_IMGPROXY_SIGNATURE=${VITE_IMGPROXY_SIGNATURE:-_}"
-        - "DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-tsu-stack}"
-        - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-replace_me_run_pnpm_auth_secret_to_generate_a_real_value_here}"
     environment:
       - "VITE_SERVER_URL=${VITE_SERVER_URL:-http://localhost:5000}"
       - "VITE_WEB_URL=${VITE_WEB_URL:-http://localhost:3000}"

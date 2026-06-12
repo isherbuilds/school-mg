@@ -13,12 +13,12 @@ export const Route = createFileRoute("/{-$locale}/(centered-layout)/(guest)/crea
         canonicalPath: "/create-an-account",
         locale: params.locale
       },
-      description: `Create a ${appConfig.site.shortName} account to save your progress and access personalized features.`,
+      description: `Create the first ${appConfig.site.shortName} root account only when your email is allowlisted. Staff accounts require an invitation.`,
       robots: {
         follow: false,
         index: false
       },
-      title: "Create an Account"
+      title: "Create Root Account"
     }),
   component: RouteComponent
 });

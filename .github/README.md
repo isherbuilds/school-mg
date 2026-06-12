@@ -224,13 +224,16 @@ TanStack Start uses [Nitro](https://nitro.build) as its server engine, which mea
 
 For the Hono server, use the following environment variables:
 
-| Variable Name          | Required | Default Value | Description                                                                                      |
-| ---------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------ |
-| `VITE_SERVER_URL`      | ✅       | -             | Base URL for the server. May also include a subpath if needed, ex: `https://example.com/server`. |
-| `VITE_WEB_URL`         | ✅       | -             | Base URL for the web app. May also include a subpath if needed, ex: `https://example.com/web`.   |
-| `BETTER_AUTH_SECRET`   | ✅       | -             | Secret key for Better-Auth. Generate with `vp run auth:secret`.                                  |
-| `DATABASE_URL`         | ✅       | -             | PostgreSQL connection string.                                                                    |
-| `ENABLE_OPEN_API_DOCS` | ❌       | `false`       | Enable OpenAPI `/docs` endpoint.                                                                 |
+| Variable Name           | Required | Default Value | Description                                                                                      |
+| ----------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------ |
+| `VITE_SERVER_URL`       | ✅       | -             | Base URL for the server. May also include a subpath if needed, ex: `https://example.com/server`. |
+| `VITE_WEB_URL`          | ✅       | -             | Base URL for the web app. May also include a subpath if needed, ex: `https://example.com/web`.   |
+| `BETTER_AUTH_SECRET`    | ✅       | -             | Secret key for Better-Auth. Generate with `vp run auth:secret`.                                  |
+| `DATABASE_URL`          | ✅       | -             | PostgreSQL connection string.                                                                    |
+| `ROOT_BOOTSTRAP_EMAILS` | ❌       | `""`          | Single email allowed to create the first root account. Leave empty after bootstrap.              |
+| `RESEND_API_KEY`        | ❌       | -             | Resend API key for transactional auth emails. Required in production for auth email delivery.    |
+| `EMAIL_FROM`            | ❌       | -             | From address for transactional auth emails. Required in production for auth email delivery.      |
+| `ENABLE_OPEN_API_DOCS`  | ❌       | `false`       | Enable OpenAPI `/docs` endpoint.                                                                 |
 
 ### Web
 
@@ -328,7 +331,7 @@ void (async () => {
 > You may want to refactor the logging middlewares since the TanStack Start server also logs incoming/outgoing requests, similar to the Hono app's middleware.
 
 > [!WARNING]
-> You may also need to adjust your Docker Compose file and the `apps/web/Dockerfile` to include build args needed in the server app such as `DATABASE_URL` and handle other environment variables.
+> Keep server secrets such as `DATABASE_URL` and `BETTER_AUTH_SECRET` runtime-only in Docker Compose `environment` entries. Dockerfiles should use only non-secret build placeholders when build-time validation requires these values.
 
 ### Resource Usage
 

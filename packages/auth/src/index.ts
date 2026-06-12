@@ -3,11 +3,23 @@ import { join } from "node:path/posix";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import "@tanstack/react-start/server-only";
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { openAPI, organization } from "better-auth/plugins";
 
 import { db } from "@tsu-stack/db";
 import * as schema from "@tsu-stack/db/schema";
 import { ENV_SERVER } from "@tsu-stack/env/server/env";
+
+import { applyAcceptedStaffInvitationToMember } from "./accepted-invitation-link";
+import { invitationEmail, verificationEmail } from "./email";
+import { canBootstrapRootUser, canSignUpWithInvitation } from "./invitation-signup-gate";
+import { invitationIdHeader, signupIntentHeader } from "./signup-headers";
+
+const signupForbiddenMessage = "Account creation requires a valid school invitation.";
+
+function getHeader(headers: Headers | undefined, name: string): string | null {
+  return headers?.get(name) ?? null;
+}
 
 export const auth = betterAuth({
   baseURL: new URL(ENV_SERVER.VITE_SERVER_URL).origin,
@@ -29,7 +41,46 @@ export const auth = betterAuth({
 
   // https://www.better-auth.com/docs/authentication/email-password
   emailAndPassword: {
-    enabled: true
+    enabled: true,
+    requireEmailVerification: true
+  },
+
+  emailVerification: {
+    sendOnSignUp: true,
+    sendVerificationEmail: async ({ url, user }) => {
+      await verificationEmail({
+        to: user.email,
+        url
+      });
+    }
+  },
+
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-up/email") {
+        return;
+      }
+
+      const email = typeof ctx.body?.email === "string" ? ctx.body.email : "";
+      const intent = getHeader(ctx.headers, signupIntentHeader);
+      const invitationId = getHeader(ctx.headers, invitationIdHeader);
+
+      if (!intent && !invitationId && (await canBootstrapRootUser(email))) {
+        return;
+      }
+
+      if (
+        intent === "staff-invitation" &&
+        invitationId &&
+        (await canSignUpWithInvitation({ email, invitationId }))
+      ) {
+        return;
+      }
+
+      throw new APIError("FORBIDDEN", {
+        message: signupForbiddenMessage
+      });
+    })
   },
 
   experimental: {
@@ -38,7 +89,47 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    organization(),
+    organization({
+      organizationHooks: {
+        afterAcceptInvitation: async (data) => {
+          await applyAcceptedStaffInvitationToMember({
+            invitationId: data.invitation.id,
+            organizationId: data.organization.id,
+            userId: data.user.id
+          });
+        }
+      },
+      requireEmailVerificationOnInvitation: true,
+      sendInvitationEmail: async (data) => {
+        await invitationEmail({
+          organizationName: data.organization.name,
+          to: data.email,
+          url: `${ENV_SERVER.VITE_WEB_URL}/accept-invitation/${data.id}`
+        });
+      },
+      schema: {
+        invitation: {
+          additionalFields: {
+            department: { type: "string", required: false, input: false },
+            employeeCode: { type: "string", required: false, input: false },
+            schoolRole: { type: "string", required: false, input: false },
+            staffStatus: { type: "string", required: false, input: false },
+            title: { type: "string", required: false, input: false }
+          }
+        },
+        member: {
+          additionalFields: {
+            deactivatedAt: { type: "date", required: false, input: false },
+            deactivationReason: { type: "string", required: false, input: false },
+            department: { type: "string", required: false, input: false },
+            employeeCode: { type: "string", required: false, input: false },
+            schoolRole: { type: "string", required: false, input: false },
+            staffStatus: { type: "string", required: false, input: false },
+            title: { type: "string", required: false, input: false }
+          }
+        }
+      }
+    }),
     openAPI({
       theme: "deepSpace"
     })

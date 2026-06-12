@@ -11,6 +11,7 @@ import { type OrpcContext } from "#@/lib/context/types";
 import { protectedProcedure } from "#@/lib/procedures/factory";
 
 import {
+  canCreateSchoolForUser,
   createSchoolForUser,
   getActiveSchoolIdForSession,
   listSchoolsForUser,
@@ -24,6 +25,10 @@ const schoolBootstrapProcedure = protectedProcedure.errors({
   },
   SCHOOL_ACCESS_DENIED: {
     message: "You do not have access to this school.",
+    status: 403
+  },
+  SCHOOL_CREATION_DENIED: {
+    message: "Only root bootstrap users can create schools.",
     status: 403
   }
 });
@@ -70,6 +75,11 @@ export const schoolBootstrapRouter = {
     .output(schoolBootstrapCreateOutputSchema)
     .handler(async ({ context, errors, input }) => {
       const authenticatedContext = context as AuthenticatedContext;
+      const canCreateSchool = await canCreateSchoolForUser(authenticatedContext.session.user.email);
+
+      if (!canCreateSchool) {
+        throw errors.SCHOOL_CREATION_DENIED();
+      }
 
       return mapBootstrapError(
         () =>

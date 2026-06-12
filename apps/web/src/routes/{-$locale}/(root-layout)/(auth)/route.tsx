@@ -12,6 +12,8 @@ import { validateNavigateTo } from "@tsu-stack/i18n/tanstack-start/lib/validate-
 
 import { useLogger } from "@/shared/providers/logger-provider";
 
+import { getSchoolsQueryOptions } from "@/entities/school-access/api";
+
 import { routeTree } from "@/routeTree.gen";
 
 /**
@@ -23,6 +25,10 @@ function isGuestRoute(pathname: string): boolean {
   const routes = getRouteTreePathsLocalized(routeTree);
   const matchingRoute = routes.find((route) => route.path === pathname);
   return matchingRoute ? matchingRoute.id.includes("(guest)") : false;
+}
+
+function matchesPathOrChild(pathname: string, routePath: string): boolean {
+  return pathname === routePath || pathname.startsWith(`${routePath}/`);
 }
 
 export const Route = createFileRoute("/{-$locale}/(root-layout)/(auth)")({
@@ -46,6 +52,23 @@ export const Route = createFileRoute("/{-$locale}/(root-layout)/(auth)")({
           redirect: redirectTo
         },
         to: "/sign-in"
+      });
+    }
+
+    const currentPath = stripLocalePrefix(location.pathname);
+    const mayHaveNoSchool =
+      matchesPathOrChild(currentPath, "/invitations") ||
+      matchesPathOrChild(currentPath, "/schools/new");
+
+    if (mayHaveNoSchool) {
+      return { user };
+    }
+
+    const schools = await context.queryClient.ensureQueryData(getSchoolsQueryOptions());
+
+    if (schools.schools.length === 0) {
+      throw redirect({
+        to: "/invitations"
       });
     }
 

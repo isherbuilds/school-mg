@@ -1,3 +1,4 @@
+export { clearActiveSchoolSetupQueries } from "./cache";
 export { useCreateSchoolMutation } from "./create-school.mutation";
 export {
   getSchoolsQueryOptions,

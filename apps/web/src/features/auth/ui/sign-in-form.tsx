@@ -98,12 +98,7 @@ export function SignInForm({
               <span className="sr-only">{appConfig.site.shortName}</span>
             </Link>
             <h1 className="text-xl font-bold">{m.auth__sign_in_title()}</h1>
-            <FieldDescription>
-              {m.auth__sign_in_no_account()}{" "}
-              <Link to="/create-an-account" search={{ redirect: redirectTo }}>
-                {m.auth__sign_in_create_account()}
-              </Link>
-            </FieldDescription>
+            <FieldDescription>{m.auth__sign_in_invitation_required_help()}</FieldDescription>
           </div>
 
           <form.Field name="email">

@@ -4,12 +4,13 @@ import {
   attendanceStatuses,
   calendarAttendanceBehaviors,
   calendarEventTypes,
+  defaultStaffAssignableRoles,
   enrollmentStatuses,
   guardianStatuses,
   schoolAccessRoles,
-  schoolActorStatuses,
   schoolShifts,
   staffAssignmentRoles,
+  staffAssignableRoles,
   staffStatuses,
   studentRelationshipTypes,
   studentStatuses,
@@ -21,9 +22,6 @@ import {
 
 export const schoolAccessRoleSchema = z.enum(schoolAccessRoles);
 export type SchoolAccessRole = z.infer<typeof schoolAccessRoleSchema>;
-
-export const schoolActorStatusSchema = z.enum(schoolActorStatuses);
-export type SchoolActorStatus = z.infer<typeof schoolActorStatusSchema>;
 
 export const staffStatusSchema = z.enum(staffStatuses);
 export type StaffStatus = z.infer<typeof staffStatusSchema>;
@@ -118,6 +116,90 @@ export const schoolBootstrapListOutputSchema = z.object({
   schools: z.array(schoolSummarySchema)
 });
 export type SchoolBootstrapListOutput = z.infer<typeof schoolBootstrapListOutputSchema>;
+
+export const staffAssignableRoleSchema = z.enum(staffAssignableRoles);
+export type StaffAssignableRole = z.infer<typeof staffAssignableRoleSchema>;
+
+export const staffAccessStatusSchema = z.enum(["pending", "linked", "revoked"]);
+export type StaffAccessStatus = z.infer<typeof staffAccessStatusSchema>;
+
+export const staffMemberSchema = z.object({
+  accessStatus: staffAccessStatusSchema,
+  createdAt: z.iso.datetime(),
+  department: z.string().nullable(),
+  email: z.email(),
+  employeeCode: z.string().nullable(),
+  fullName: z.string().nullable(),
+  id: z.string().min(1),
+  invitationId: z.string().nullable(),
+  memberId: z.string().nullable(),
+  role: schoolAccessRoleSchema,
+  status: staffStatusSchema,
+  title: z.string().nullable(),
+  updatedAt: z.iso.datetime(),
+  userId: z.string().nullable()
+});
+export type StaffMember = z.infer<typeof staffMemberSchema>;
+
+const staffMemberInputBaseSchema = z.object({
+  department: nonEmptyTextSchema.max(120).nullable().optional(),
+  email: z.email(),
+  employeeCode: nonEmptyTextSchema.max(80).nullable().optional(),
+  role: staffAssignableRoleSchema,
+  status: staffStatusSchema,
+  title: nonEmptyTextSchema.max(120).nullable().optional()
+});
+
+export const staffMemberCreateInputSchema = staffMemberInputBaseSchema.extend({
+  role: staffAssignableRoleSchema.default(defaultStaffAssignableRoles[0]),
+  status: staffStatusSchema.default("active")
+});
+export type StaffMemberCreateInput = z.infer<typeof staffMemberCreateInputSchema>;
+
+export const staffMemberUpdateInputSchema = staffMemberInputBaseSchema
+  .partial()
+  .extend({
+    id: z.string().min(1)
+  })
+  .refine(hasUpdateFields, {
+    message: "At least one field must be provided.",
+    path: ["id"]
+  });
+export type StaffMemberUpdateInput = z.infer<typeof staffMemberUpdateInputSchema>;
+
+export const staffListInputSchema = z.object({});
+export type StaffListInput = z.infer<typeof staffListInputSchema>;
+
+export const staffListOutputSchema = z.object({
+  canManagePrincipalRole: z.boolean(),
+  canManageStaff: z.boolean(),
+  staff: z.array(staffMemberSchema)
+});
+export type StaffListOutput = z.infer<typeof staffListOutputSchema>;
+
+export const staffAccessGrantInputSchema = z.object({
+  staffMemberId: z.string().min(1)
+});
+export type StaffAccessGrantInput = z.infer<typeof staffAccessGrantInputSchema>;
+
+export const staffAccessRevokeInputSchema = z.object({
+  staffMemberId: z.string().min(1)
+});
+export type StaffAccessRevokeInput = z.infer<typeof staffAccessRevokeInputSchema>;
+
+export const staffInvitationPreviewInputSchema = z.object({
+  invitationId: z.string().min(1)
+});
+export type StaffInvitationPreviewInput = z.infer<typeof staffInvitationPreviewInputSchema>;
+
+export const staffInvitationPreviewSchema = z.object({
+  email: z.email(),
+  expiresAt: z.iso.datetime(),
+  invitationId: z.string(),
+  organizationName: nonEmptyTextSchema,
+  status: z.enum(["pending", "accepted", "rejected", "canceled", "expired"])
+});
+export type StaffInvitationPreview = z.infer<typeof staffInvitationPreviewSchema>;
 
 export const academicYearSchema = z.object({
   createdAt: z.iso.datetime(),

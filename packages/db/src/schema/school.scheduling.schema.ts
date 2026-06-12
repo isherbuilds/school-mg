@@ -13,14 +13,13 @@ import {
   uuid
 } from "drizzle-orm/pg-core";
 
-import { organization } from "#@/schema/auth.schema";
+import { member, organization } from "#@/schema/auth.schema";
 import {
   academicYears,
   sections,
   studentEnrollments,
   subjectOfferings
 } from "#@/schema/school.academics.schema";
-import { schoolActors } from "#@/schema/school.people.schema";
 import {
   attendanceStatusEnum,
   calendarAttendanceBehaviorEnum,
@@ -81,13 +80,13 @@ export const timetableSlots = pgTable(
     subjectOfferingId: uuid("subject_offering_id")
       .notNull()
       .references(() => subjectOfferings.id, { onDelete: "cascade" }),
-    teacherActorId: uuid("teacher_actor_id").references(() => schoolActors.id),
+    teacherMemberId: text("teacher_member_id").references(() => member.id),
     weekday: weekdayEnum("weekday").notNull(),
     ...timestamps()
   },
   (table) => [
     index("timetable_slots_section_idx").on(table.organizationId, table.sectionId),
-    index("timetable_slots_teacher_idx").on(table.organizationId, table.teacherActorId),
+    index("timetable_slots_teacher_idx").on(table.organizationId, table.teacherMemberId),
     uniqueIndex("timetable_slots_section_slot_uidx").on(
       table.organizationId,
       table.sectionId,
@@ -120,9 +119,9 @@ export const timetableSlots = pgTable(
       name: "timetable_slots_subject_offering_scope_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [table.organizationId, table.teacherActorId],
-      foreignColumns: [schoolActors.organizationId, schoolActors.id],
-      name: "timetable_slots_teacher_actor_org_fk"
+      columns: [table.organizationId, table.teacherMemberId],
+      foreignColumns: [member.organizationId, member.id],
+      name: "timetable_slots_teacher_member_org_fk"
     }),
     check("timetable_slots_time_order_chk", sql`${table.startMinute} < ${table.endMinute}`),
     check(
@@ -149,7 +148,7 @@ export const attendanceSessions = pgTable(
     sectionId: uuid("section_id")
       .notNull()
       .references(() => sections.id, { onDelete: "cascade" }),
-    takenByActorId: uuid("taken_by_actor_id").references(() => schoolActors.id),
+    takenByMemberId: text("taken_by_member_id").references(() => member.id),
     ...timestamps()
   },
   (table) => [
@@ -175,9 +174,9 @@ export const attendanceSessions = pgTable(
       name: "attendance_sessions_calendar_event_org_fk"
     }),
     foreignKey({
-      columns: [table.organizationId, table.takenByActorId],
-      foreignColumns: [schoolActors.organizationId, schoolActors.id],
-      name: "attendance_sessions_taken_by_actor_org_fk"
+      columns: [table.organizationId, table.takenByMemberId],
+      foreignColumns: [member.organizationId, member.id],
+      name: "attendance_sessions_taken_by_member_org_fk"
     }),
     foreignKey({
       columns: [table.organizationId, table.academicYearId],
@@ -200,7 +199,7 @@ export const attendanceRecords = pgTable(
       .notNull()
       .references(() => studentEnrollments.id, { onDelete: "cascade" }),
     markedAt: timestamp("marked_at").defaultNow().notNull(),
-    markedByActorId: uuid("marked_by_actor_id").references(() => schoolActors.id),
+    markedByMemberId: text("marked_by_member_id").references(() => member.id),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
@@ -218,9 +217,9 @@ export const attendanceRecords = pgTable(
     }),
     index("attendance_records_enrollment_idx").on(table.organizationId, table.enrollmentId),
     foreignKey({
-      columns: [table.organizationId, table.markedByActorId],
-      foreignColumns: [schoolActors.organizationId, schoolActors.id],
-      name: "attendance_records_marked_by_actor_org_fk"
+      columns: [table.organizationId, table.markedByMemberId],
+      foreignColumns: [member.organizationId, member.id],
+      name: "attendance_records_marked_by_member_org_fk"
     }),
     foreignKey({
       columns: [table.organizationId, table.sectionId, table.academicYearId, table.sessionId],

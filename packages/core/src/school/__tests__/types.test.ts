@@ -17,7 +17,13 @@ import {
   schoolSelectInputSchema,
   schoolSetupListOutputSchema,
   schoolSummarySchema,
+  staffAccessGrantInputSchema,
+  staffAccessRevokeInputSchema,
+  staffAssignableRoleSchema,
   staffAssignmentRoleSchema,
+  staffMemberCreateInputSchema,
+  staffMemberSchema,
+  staffMemberUpdateInputSchema,
   subjectCreateInputSchema,
   studentRelationshipTypeSchema,
   transportRideStatusSchema
@@ -38,6 +44,11 @@ describe("school domain contracts", () => {
       "subject_teacher",
       "substitute_teacher"
     ]);
+  });
+
+  it("limits staff-manageable access roles to principal and teacher", () => {
+    expect(staffAssignableRoleSchema.options).toEqual(["principal", "teacher"]);
+    expect(() => staffAssignableRoleSchema.parse("owner")).toThrow("Invalid option");
   });
 
   it("keeps daily attendance statuses at present and absent", () => {
@@ -223,6 +234,93 @@ describe("school domain contracts", () => {
         id: "018f3ad5-8af8-733f-bb74-33f7f224f126"
       })
     ).toThrow("At least one field must be provided.");
+  });
+
+  it("requires staff create inputs to include email", () => {
+    expect(() =>
+      staffMemberCreateInputSchema.parse({
+        employeeCode: "T-100"
+      })
+    ).toThrow("Invalid input");
+  });
+
+  it("rejects staff create inputs with departments longer than 120 characters", () => {
+    expect(() =>
+      staffMemberCreateInputSchema.parse({
+        department: "a".repeat(121),
+        email: "asha.rao@example.com",
+        employeeCode: "T-100"
+      })
+    ).toThrow("Too big");
+  });
+
+  it("serializes pending teacher staff member transport records", () => {
+    const staffMember = {
+      accessStatus: "pending",
+      createdAt: "2026-06-11T00:00:00.000Z",
+      department: null,
+      email: "asha.rao@example.com",
+      employeeCode: "T-100",
+      fullName: null,
+      id: "invitation-1",
+      invitationId: "invitation-1",
+      memberId: null,
+      role: "teacher",
+      status: "active",
+      title: null,
+      updatedAt: "2026-06-11T00:00:00.000Z",
+      userId: null
+    };
+
+    expect(staffMemberSchema.parse(staffMember)).toEqual(staffMember);
+  });
+
+  it("validates staff access grant and revoke inputs by staff member id", () => {
+    const input = {
+      staffMemberId: "member-1"
+    };
+
+    expect(staffAccessGrantInputSchema.parse(input)).toEqual(input);
+    expect(staffAccessRevokeInputSchema.parse(input)).toEqual(input);
+    expect(() =>
+      staffAccessGrantInputSchema.parse({
+        staffMemberId: ""
+      })
+    ).toThrow("Too small");
+    expect(() =>
+      staffAccessRevokeInputSchema.parse({
+        staffMemberId: ""
+      })
+    ).toThrow("Too small");
+  });
+
+  it("rejects id-only staff member updates", () => {
+    expect(() =>
+      staffMemberUpdateInputSchema.parse({
+        id: "member-1"
+      })
+    ).toThrow("At least one field must be provided.");
+  });
+
+  it("rejects staff member updates with departments longer than 120 characters", () => {
+    expect(() =>
+      staffMemberUpdateInputSchema.parse({
+        department: "a".repeat(121),
+        id: "member-1"
+      })
+    ).toThrow("Too big");
+  });
+
+  it("accepts opaque staff member ids for updates", () => {
+    expect(
+      staffMemberUpdateInputSchema.parse({
+        id: "member-1",
+        title: "Teacher"
+      })
+    ).toEqual({
+      id: "member-1",
+      title: "Teacher"
+    });
   });
 
   it("requires academic year date updates to include both bounds", () => {
