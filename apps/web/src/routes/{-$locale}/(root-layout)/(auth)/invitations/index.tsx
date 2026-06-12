@@ -9,9 +9,8 @@ import { listUserInvitationsQueryOptions } from "@/entities/staff-invitations";
 import { InvitationsPage } from "@/pages/invitations";
 
 export const Route = createFileRoute("/{-$locale}/(root-layout)/(auth)/invitations/")({
-  loader: ({ context }) => {
-    void context.queryClient.ensureQueryData(listUserInvitationsQueryOptions());
-  },
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(listUserInvitationsQueryOptions()).catch(() => undefined),
   head: ({ params }) =>
     generateAppSeo({
       alternates: {
