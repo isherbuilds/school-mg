@@ -18,13 +18,13 @@ vi.mock("#@/routers/school/access-guards", () => {
 vi.mock("#@/routers/school/staff-access/queries", () => {
   return {
     createOrResendStaffInvitation: vi.fn(),
-    getStaffProfileForAccess: vi.fn(),
+    getStaffMemberForAccess: vi.fn(),
     previewStaffInvitation: vi.fn(),
     revokeStaffAccess: vi.fn()
   };
 });
 
-const staffProfileId = "018f3ad5-8af8-733f-bb74-33f7f224f127";
+const staffMemberId = "invitation-1";
 
 const context = {
   session: {
@@ -40,30 +40,29 @@ const context = {
 
 const staffMember = {
   accessStatus: "pending" as const,
-  actorId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
   createdAt: "2026-06-10T00:00:00.000Z",
   department: "Academics",
   email: "teacher@example.com",
   employeeCode: "T-001",
-  fullName: "Taylor Teacher",
-  id: staffProfileId,
+  fullName: null,
+  id: staffMemberId,
   invitationId: "invitation-1",
-  joinedOn: "2026-06-01",
-  leftOn: null,
-  phone: "+15551234567",
-  roles: ["teacher" as const],
+  memberId: null,
+  role: "teacher" as const,
   status: "active" as const,
   title: "Teacher",
   updatedAt: "2026-06-10T00:00:00.000Z",
   userId: null
 };
 
-const staffProfileAccess = {
-  actorId: staffMember.actorId,
+const staffMemberAccess = {
+  accessStatus: staffMember.accessStatus,
   email: staffMember.email,
   hasLinkedAccess: false,
-  id: staffProfileId,
-  roles: ["teacher" as const],
+  id: staffMemberId,
+  invitationId: "invitation-1",
+  memberId: null,
+  role: "teacher" as const,
   userId: null
 };
 
@@ -77,7 +76,7 @@ describe("school staff access router", () => {
       canManagePrincipalRole: false,
       canManageStaff: true
     });
-    vi.mocked(queries.getStaffProfileForAccess).mockResolvedValue(staffProfileAccess);
+    vi.mocked(queries.getStaffMemberForAccess).mockResolvedValue(staffMemberAccess);
     vi.mocked(queries.createOrResendStaffInvitation).mockResolvedValue(staffMember);
     vi.mocked(queries.previewStaffInvitation).mockResolvedValue({
       email: "teacher@example.com",
@@ -90,6 +89,7 @@ describe("school staff access router", () => {
       ...staffMember,
       accessStatus: "revoked",
       invitationId: null,
+      memberId: "member-1",
       userId: "staff-user-1"
     });
   });
@@ -135,7 +135,7 @@ describe("school staff access router", () => {
     });
 
     await expect(
-      call(schoolStaffAccessRouter.grant, { staffProfileId }, { context })
+      call(schoolStaffAccessRouter.grant, { staffMemberId }, { context })
     ).rejects.toMatchObject({
       code: "SCHOOL_STAFF_MANAGEMENT_DENIED"
     });
@@ -145,25 +145,25 @@ describe("school staff access router", () => {
 
   it("creates or resends pending invitation for staff email", async () => {
     await expect(
-      call(schoolStaffAccessRouter.grant, { staffProfileId }, { context })
+      call(schoolStaffAccessRouter.grant, { staffMemberId }, { context })
     ).resolves.toEqual(staffMember);
 
-    expect(queries.getStaffProfileForAccess).toHaveBeenCalledWith("org-1", staffProfileId);
+    expect(queries.getStaffMemberForAccess).toHaveBeenCalledWith("org-1", staffMemberId);
     expect(queries.createOrResendStaffInvitation).toHaveBeenCalledWith({
       inviterId: "user-1",
       organizationId: "org-1",
-      staffProfileId
+      staffMemberId
     });
   });
 
   it("denies grant for owner targets before creating invitations", async () => {
-    vi.mocked(queries.getStaffProfileForAccess).mockResolvedValue({
-      ...staffProfileAccess,
-      roles: ["owner" as const]
+    vi.mocked(queries.getStaffMemberForAccess).mockResolvedValue({
+      ...staffMemberAccess,
+      role: "owner" as const
     });
 
     await expect(
-      call(schoolStaffAccessRouter.grant, { staffProfileId }, { context })
+      call(schoolStaffAccessRouter.grant, { staffMemberId }, { context })
     ).rejects.toMatchObject({
       code: "SCHOOL_PRINCIPAL_MANAGEMENT_DENIED"
     });
@@ -178,7 +178,7 @@ describe("school staff access router", () => {
     });
 
     await expect(
-      call(schoolStaffAccessRouter.revoke, { staffProfileId }, { context })
+      call(schoolStaffAccessRouter.revoke, { staffMemberId }, { context })
     ).rejects.toMatchObject({
       code: "SCHOOL_STAFF_MANAGEMENT_DENIED"
     });
@@ -187,13 +187,13 @@ describe("school staff access router", () => {
   });
 
   it("denies revoke for owner targets before deactivating roles", async () => {
-    vi.mocked(queries.getStaffProfileForAccess).mockResolvedValue({
-      ...staffProfileAccess,
-      roles: ["owner" as const]
+    vi.mocked(queries.getStaffMemberForAccess).mockResolvedValue({
+      ...staffMemberAccess,
+      role: "owner" as const
     });
 
     await expect(
-      call(schoolStaffAccessRouter.revoke, { staffProfileId }, { context })
+      call(schoolStaffAccessRouter.revoke, { staffMemberId }, { context })
     ).rejects.toMatchObject({
       code: "SCHOOL_PRINCIPAL_MANAGEMENT_DENIED"
     });
@@ -201,17 +201,17 @@ describe("school staff access router", () => {
     expect(queries.revokeStaffAccess).not.toHaveBeenCalled();
   });
 
-  it("revoke deactivates roles and deletes membership through query helper", async () => {
+  it("revoke marks access inactive through query helper", async () => {
     await expect(
-      call(schoolStaffAccessRouter.revoke, { staffProfileId }, { context })
+      call(schoolStaffAccessRouter.revoke, { staffMemberId }, { context })
     ).resolves.toMatchObject({
       accessStatus: "revoked",
-      id: staffProfileId
+      id: staffMemberId
     });
 
     expect(queries.revokeStaffAccess).toHaveBeenCalledWith({
       organizationId: "org-1",
-      staffProfileId
+      staffMemberId
     });
   });
 });

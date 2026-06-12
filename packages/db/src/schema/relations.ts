@@ -52,16 +52,6 @@ export const relations = defineRelations(schema, (r) => {
         to: r.studentRelationships.guardianId
       })
     },
-    schoolActors: {
-      roles: r.many.schoolActorRoles({
-        from: r.schoolActors.id,
-        to: r.schoolActorRoles.actorId
-      }),
-      staffProfile: r.one.staffProfiles({
-        from: r.schoolActors.id,
-        to: r.staffProfiles.actorId
-      })
-    },
     sections: {
       academicYear: r.one.academicYears({
         from: r.sections.academicYearId,
@@ -85,23 +75,17 @@ export const relations = defineRelations(schema, (r) => {
       })
     },
     staffAssignments: {
+      member: r.one.member({
+        from: r.staffAssignments.memberId,
+        to: r.member.id
+      }),
       section: r.one.sections({
         from: r.staffAssignments.sectionId,
         to: r.sections.id
       }),
-      staffProfile: r.one.staffProfiles({
-        from: r.staffAssignments.staffProfileId,
-        to: r.staffProfiles.id
-      }),
       subjectOffering: r.one.subjectOfferings({
         from: r.staffAssignments.subjectOfferingId,
         to: r.subjectOfferings.id
-      })
-    },
-    staffProfiles: {
-      assignments: r.many.staffAssignments({
-        from: r.staffProfiles.id,
-        to: r.staffAssignments.staffProfileId
       })
     },
     students: {
@@ -167,9 +151,9 @@ export const relations = defineRelations(schema, (r) => {
         from: r.timetableSlots.subjectOfferingId,
         to: r.subjectOfferings.id
       }),
-      teacher: r.one.schoolActors({
-        from: r.timetableSlots.teacherActorId,
-        to: r.schoolActors.id
+      teacher: r.one.member({
+        from: r.timetableSlots.teacherMemberId,
+        to: r.member.id
       })
     },
     transportRiders: {

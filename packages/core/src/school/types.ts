@@ -4,12 +4,13 @@ import {
   attendanceStatuses,
   calendarAttendanceBehaviors,
   calendarEventTypes,
+  defaultStaffAssignableRoles,
   enrollmentStatuses,
   guardianStatuses,
   schoolAccessRoles,
-  schoolActorStatuses,
   schoolShifts,
   staffAssignmentRoles,
+  staffAssignableRoles,
   staffStatuses,
   studentRelationshipTypes,
   studentStatuses,
@@ -21,9 +22,6 @@ import {
 
 export const schoolAccessRoleSchema = z.enum(schoolAccessRoles);
 export type SchoolAccessRole = z.infer<typeof schoolAccessRoleSchema>;
-
-export const schoolActorStatusSchema = z.enum(schoolActorStatuses);
-export type SchoolActorStatus = z.infer<typeof schoolActorStatusSchema>;
 
 export const staffStatusSchema = z.enum(staffStatuses);
 export type StaffStatus = z.infer<typeof staffStatusSchema>;
@@ -119,26 +117,23 @@ export const schoolBootstrapListOutputSchema = z.object({
 });
 export type SchoolBootstrapListOutput = z.infer<typeof schoolBootstrapListOutputSchema>;
 
-export const staffAssignableRoleSchema = z.enum(["principal", "teacher"]);
+export const staffAssignableRoleSchema = z.enum(staffAssignableRoles);
 export type StaffAssignableRole = z.infer<typeof staffAssignableRoleSchema>;
 
-export const staffAccessStatusSchema = z.enum(["not_invited", "pending", "linked", "revoked"]);
+export const staffAccessStatusSchema = z.enum(["pending", "linked", "revoked"]);
 export type StaffAccessStatus = z.infer<typeof staffAccessStatusSchema>;
 
 export const staffMemberSchema = z.object({
   accessStatus: staffAccessStatusSchema,
-  actorId: uuidSchema,
   createdAt: z.iso.datetime(),
   department: z.string().nullable(),
   email: z.email(),
-  employeeCode: nonEmptyTextSchema,
-  fullName: nonEmptyTextSchema,
-  id: uuidSchema,
+  employeeCode: z.string().nullable(),
+  fullName: z.string().nullable(),
+  id: z.string().min(1),
   invitationId: z.string().nullable(),
-  joinedOn: isoDateSchema.nullable(),
-  leftOn: isoDateSchema.nullable(),
-  phone: z.string().nullable(),
-  roles: z.array(staffAssignableRoleSchema),
+  memberId: z.string().nullable(),
+  role: schoolAccessRoleSchema,
   status: staffStatusSchema,
   title: z.string().nullable(),
   updatedAt: z.iso.datetime(),
@@ -149,46 +144,27 @@ export type StaffMember = z.infer<typeof staffMemberSchema>;
 const staffMemberInputBaseSchema = z.object({
   department: nonEmptyTextSchema.max(120).nullable().optional(),
   email: z.email(),
-  employeeCode: nonEmptyTextSchema.max(80),
-  fullName: nonEmptyTextSchema.max(160),
-  joinedOn: isoDateSchema.nullable().optional(),
-  leftOn: isoDateSchema.nullable().optional(),
-  phone: nonEmptyTextSchema.max(40).nullable().optional(),
-  roles: z.array(staffAssignableRoleSchema).min(1),
+  employeeCode: nonEmptyTextSchema.max(80).nullable().optional(),
+  role: staffAssignableRoleSchema,
   status: staffStatusSchema,
   title: nonEmptyTextSchema.max(120).nullable().optional()
 });
 
-export const staffMemberCreateInputSchema = staffMemberInputBaseSchema
-  .extend({
-    roles: z.array(staffAssignableRoleSchema).min(1).default(["teacher"]),
-    status: staffStatusSchema.default("active")
-  })
-  .refine(
-    (input) => input.joinedOn == null || input.leftOn == null || input.joinedOn <= input.leftOn,
-    {
-      message: "Joined date must be before or equal to left date.",
-      path: ["leftOn"]
-    }
-  );
+export const staffMemberCreateInputSchema = staffMemberInputBaseSchema.extend({
+  role: staffAssignableRoleSchema.default(defaultStaffAssignableRoles[0]),
+  status: staffStatusSchema.default("active")
+});
 export type StaffMemberCreateInput = z.infer<typeof staffMemberCreateInputSchema>;
 
 export const staffMemberUpdateInputSchema = staffMemberInputBaseSchema
   .partial()
   .extend({
-    id: uuidSchema
+    id: z.string().min(1)
   })
   .refine(hasUpdateFields, {
     message: "At least one field must be provided.",
     path: ["id"]
-  })
-  .refine(
-    (input) => input.joinedOn == null || input.leftOn == null || input.joinedOn <= input.leftOn,
-    {
-      message: "Joined date must be before or equal to left date.",
-      path: ["leftOn"]
-    }
-  );
+  });
 export type StaffMemberUpdateInput = z.infer<typeof staffMemberUpdateInputSchema>;
 
 export const staffListInputSchema = z.object({});
@@ -202,12 +178,12 @@ export const staffListOutputSchema = z.object({
 export type StaffListOutput = z.infer<typeof staffListOutputSchema>;
 
 export const staffAccessGrantInputSchema = z.object({
-  staffProfileId: uuidSchema
+  staffMemberId: z.string().min(1)
 });
 export type StaffAccessGrantInput = z.infer<typeof staffAccessGrantInputSchema>;
 
 export const staffAccessRevokeInputSchema = z.object({
-  staffProfileId: uuidSchema
+  staffMemberId: z.string().min(1)
 });
 export type StaffAccessRevokeInput = z.infer<typeof staffAccessRevokeInputSchema>;
 

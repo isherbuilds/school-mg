@@ -2,23 +2,26 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   return {
-    updateCalls: [] as Array<{
-      table: string;
-      values: unknown;
-      where: unknown;
-    }>
+    selectRows: [] as unknown[],
+    updateCalls: [] as Array<{ table: string; values: unknown }>
   };
 });
 
 const tables = vi.hoisted(() => {
   return {
-    schoolActors: {
-      __table: "school_actors",
-      email: "school_actors.email",
-      organizationId: "school_actors.organizationId",
-      status: "school_actors.status",
-      updatedAt: "school_actors.updatedAt",
-      userId: "school_actors.userId"
+    invitation: {
+      __table: "invitation",
+      department: "invitation.department",
+      employeeCode: "invitation.employeeCode",
+      id: "invitation.id",
+      schoolRole: "invitation.schoolRole",
+      staffStatus: "invitation.staffStatus",
+      title: "invitation.title"
+    },
+    member: {
+      __table: "member",
+      organizationId: "member.organizationId",
+      userId: "member.userId"
     }
   };
 });
@@ -31,61 +34,88 @@ function tableName(value: unknown): string {
 
 vi.mock("@tsu-stack/db", () => {
   return {
-    and: vi.fn((...conditions: unknown[]) => {
-      return { conditions, op: "and" };
-    }),
+    and: vi.fn((...conditions: unknown[]) => conditions),
     db: {
+      select: vi.fn(() => {
+        return {
+          from: vi.fn(() => {
+            return {
+              where: vi.fn(() => {
+                return {
+                  limit: vi.fn(() => Promise.resolve(mocks.selectRows))
+                };
+              })
+            };
+          })
+        };
+      }),
       update: vi.fn((targetTable: unknown) => {
         return {
           set: vi.fn((values: unknown) => {
+            mocks.updateCalls.push({ table: tableName(targetTable), values });
             return {
-              where: vi.fn((where: unknown) => {
-                mocks.updateCalls.push({
-                  table: tableName(targetTable),
-                  values,
-                  where
-                });
-                return Promise.resolve([]);
-              })
+              where: vi.fn(() => Promise.resolve([]))
             };
           })
         };
       })
     },
     eq: vi.fn((column: unknown, value: unknown) => {
-      return { column, op: "eq", value };
-    }),
-    sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => {
-      return { op: "sql", strings, values };
+      return { column, value };
     })
   };
 });
 
 vi.mock("@tsu-stack/db/schema", () => tables);
 
-describe("accepted invitation school actor linking", () => {
+describe("accepted staff invitation linking", () => {
   beforeEach(() => {
+    mocks.selectRows = [
+      {
+        department: "Academics",
+        employeeCode: "T-001",
+        schoolRole: "teacher",
+        staffStatus: "active",
+        title: "Teacher"
+      }
+    ];
     mocks.updateCalls = [];
   });
 
-  it("links actor using normalized invitation email", async () => {
-    const { linkAcceptedInvitationToSchoolActor } = await import("#@/accepted-invitation-link");
+  it("copies staff invitation fields onto the Better Auth member", async () => {
+    const { applyAcceptedStaffInvitationToMember } = await import("#@/accepted-invitation-link");
 
-    await linkAcceptedInvitationToSchoolActor({
-      invitationEmail: " Teacher@Example.com ",
+    await applyAcceptedStaffInvitationToMember({
+      invitationId: "invitation-1",
       organizationId: "org-1",
       userId: "user-1"
     });
 
-    expect(mocks.updateCalls).toHaveLength(1);
-    expect(mocks.updateCalls[0]).toMatchObject({
-      table: "school_actors",
-      values: {
-        email: "teacher@example.com",
-        status: "active",
-        userId: "user-1"
+    expect(mocks.updateCalls).toEqual([
+      {
+        table: "member",
+        values: {
+          department: "Academics",
+          employeeCode: "T-001",
+          schoolRole: "teacher",
+          staffStatus: "active",
+          title: "Teacher"
+        }
       }
+    ]);
+  });
+
+  it("ignores generic organization invitations", async () => {
+    mocks.selectRows = [{ schoolRole: null }];
+
+    const { applyAcceptedStaffInvitationToMember } = await import("#@/accepted-invitation-link");
+
+    await applyAcceptedStaffInvitationToMember({
+      invitationId: "invitation-1",
+      organizationId: "org-1",
+      userId: "user-1"
     });
-    expect(JSON.stringify(mocks.updateCalls[0]?.where)).toContain("teacher@example.com");
+
+    expect(mocks.updateCalls).toEqual([]);
   });
 });

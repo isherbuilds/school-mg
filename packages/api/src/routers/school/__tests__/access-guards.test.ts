@@ -1,17 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { eq } from "@tsu-stack/db";
-import { schoolActors } from "@tsu-stack/db/schema";
+import { inArray } from "@tsu-stack/db";
+import { member } from "@tsu-stack/db/schema";
 
 import { getActiveSchoolRolesForUser } from "#@/routers/school/access-guards";
 
 const dbMock = vi.hoisted(() => {
   const where = vi.fn();
-  const innerJoin = vi.fn(() => {
-    return { where };
-  });
   const from = vi.fn(() => {
-    return { innerJoin };
+    return { where };
   });
   const select = vi.fn(() => {
     return { from };
@@ -19,7 +16,6 @@ const dbMock = vi.hoisted(() => {
 
   return {
     from,
-    innerJoin,
     select,
     where
   };
@@ -33,6 +29,12 @@ vi.mock("@tsu-stack/db", () => {
     },
     eq: vi.fn((left, right) => {
       return { left, right };
+    }),
+    inArray: vi.fn((left, values) => {
+      return { left, op: "inArray", values };
+    }),
+    isNotNull: vi.fn((column) => {
+      return { column, op: "isNotNull" };
     })
   };
 });
@@ -43,9 +45,9 @@ describe("school access guards", () => {
     dbMock.where.mockResolvedValue([{ role: "principal" }]);
   });
 
-  it("only counts active school actors when reading active roles", async () => {
+  it("counts active and on-leave member school roles when reading active roles", async () => {
     await expect(getActiveSchoolRolesForUser("org-1", "user-1")).resolves.toEqual(["principal"]);
 
-    expect(eq).toHaveBeenCalledWith(schoolActors.status, "active");
+    expect(inArray).toHaveBeenCalledWith(member.staffStatus, ["active", "on_leave"]);
   });
 });

@@ -1,6 +1,6 @@
 import { type SchoolAccessRole, type StaffAssignableRole } from "@tsu-stack/core/school";
-import { and, db, eq } from "@tsu-stack/db";
-import { member, schoolActorRoles, schoolActors, session } from "@tsu-stack/db/schema";
+import { and, db, eq, inArray, isNotNull } from "@tsu-stack/db";
+import { member, session } from "@tsu-stack/db/schema";
 
 export async function getActiveOrganizationIdForSession(sessionId: string): Promise<string | null> {
   const [row] = await db
@@ -30,25 +30,18 @@ export async function getActiveSchoolRolesForUser(
   userId: string
 ): Promise<SchoolAccessRole[]> {
   const rows = await db
-    .select({ role: schoolActorRoles.role })
-    .from(schoolActorRoles)
-    .innerJoin(
-      schoolActors,
-      and(
-        eq(schoolActors.organizationId, schoolActorRoles.organizationId),
-        eq(schoolActors.id, schoolActorRoles.actorId)
-      )
-    )
+    .select({ role: member.schoolRole })
+    .from(member)
     .where(
       and(
-        eq(schoolActorRoles.organizationId, organizationId),
-        eq(schoolActorRoles.active, true),
-        eq(schoolActors.status, "active"),
-        eq(schoolActors.userId, userId)
+        eq(member.organizationId, organizationId),
+        eq(member.userId, userId),
+        inArray(member.staffStatus, ["active", "on_leave"]),
+        isNotNull(member.schoolRole)
       )
     );
 
-  return rows.map((row) => row.role);
+  return rows.flatMap((row) => (row.role === null ? [] : [row.role]));
 }
 
 export function staffPermissionsFromRoles(roles: readonly string[]): {

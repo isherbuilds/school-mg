@@ -19,7 +19,7 @@ vi.mock("#@/routers/school/access-guards", () => {
 vi.mock("#@/routers/school/staff/queries", () => {
   return {
     createStaffMember: vi.fn(),
-    getStaffMemberActiveRoles: vi.fn(),
+    getStaffMemberRole: vi.fn(),
     listStaffMembers: vi.fn(),
     updateStaffMember: vi.fn()
   };
@@ -37,20 +37,19 @@ const context = {
   }
 } as unknown as OrpcContext;
 
+const staffMemberId = "018f3ad5-8af8-733f-bb74-33f7f224f127";
+
 const staffMember = {
   accessStatus: "linked" as const,
-  actorId: "018f3ad5-8af8-733f-bb74-33f7f224f126",
   createdAt: "2026-06-10T00:00:00.000Z",
   department: "Academics",
   email: "teacher@example.com",
   employeeCode: "T-001",
   fullName: "Taylor Teacher",
-  id: "018f3ad5-8af8-733f-bb74-33f7f224f127",
+  id: staffMemberId,
   invitationId: null,
-  joinedOn: "2026-06-01",
-  leftOn: null,
-  phone: "+15551234567",
-  roles: ["teacher" as const],
+  memberId: staffMemberId,
+  role: "teacher" as const,
   status: "active" as const,
   title: "Teacher",
   updatedAt: "2026-06-10T00:00:00.000Z",
@@ -61,10 +60,7 @@ const createInput = {
   department: "Academics",
   email: "teacher@example.com",
   employeeCode: "T-001",
-  fullName: "Taylor Teacher",
-  joinedOn: "2026-06-01",
-  phone: "+15551234567",
-  roles: ["teacher" as const],
+  role: "teacher" as const,
   status: "active" as const,
   title: "Teacher"
 };
@@ -80,7 +76,7 @@ describe("school staff router", () => {
       canManageStaff: true
     });
     vi.mocked(accessGuards.canManageRequestedStaffRoles).mockReturnValue(true);
-    vi.mocked(queries.getStaffMemberActiveRoles).mockResolvedValue(["teacher"]);
+    vi.mocked(queries.getStaffMemberRole).mockResolvedValue("teacher");
     vi.mocked(queries.listStaffMembers).mockResolvedValue([staffMember]);
     vi.mocked(queries.createStaffMember).mockResolvedValue(staffMember);
     vi.mocked(queries.updateStaffMember).mockResolvedValue(staffMember);
@@ -171,7 +167,7 @@ describe("school staff router", () => {
         schoolStaffRouter.create,
         {
           ...createInput,
-          roles: ["principal" as const]
+          role: "principal" as const
         },
         { context }
       )
@@ -204,14 +200,14 @@ describe("school staff router", () => {
   });
 
   it("denies principal managers from demoting existing principals", async () => {
-    vi.mocked(queries.getStaffMemberActiveRoles).mockResolvedValue(["principal"]);
+    vi.mocked(queries.getStaffMemberRole).mockResolvedValue("principal");
 
     await expect(
       call(
         schoolStaffRouter.update,
         {
-          id: "018f3ad5-8af8-733f-bb74-33f7f224f127",
-          roles: ["teacher" as const]
+          id: staffMemberId,
+          role: "teacher" as const
         },
         { context }
       )
@@ -225,22 +221,43 @@ describe("school staff router", () => {
       canManagePrincipalRole: true,
       canManageStaff: true
     });
-    vi.mocked(queries.getStaffMemberActiveRoles).mockResolvedValue(["principal"]);
+    vi.mocked(queries.getStaffMemberRole).mockResolvedValue("principal");
 
     await expect(
       call(
         schoolStaffRouter.update,
         {
-          id: "018f3ad5-8af8-733f-bb74-33f7f224f127",
-          roles: ["teacher" as const]
+          id: staffMemberId,
+          role: "teacher" as const
         },
         { context }
       )
     ).resolves.toEqual(staffMember);
 
     expect(queries.updateStaffMember).toHaveBeenCalledWith("org-1", {
-      id: "018f3ad5-8af8-733f-bb74-33f7f224f127",
-      roles: ["teacher"]
+      id: staffMemberId,
+      role: "teacher"
     });
+  });
+
+  it("denies owner staff updates for staff managers", async () => {
+    vi.mocked(accessGuards.staffPermissionsFromRoles).mockReturnValue({
+      canManagePrincipalRole: true,
+      canManageStaff: true
+    });
+    vi.mocked(queries.getStaffMemberRole).mockResolvedValue("owner");
+
+    await expect(
+      call(
+        schoolStaffRouter.update,
+        {
+          id: staffMemberId,
+          title: "Owner"
+        },
+        { context }
+      )
+    ).rejects.toMatchObject({ code: "SCHOOL_PRINCIPAL_MANAGEMENT_DENIED" });
+
+    expect(queries.updateStaffMember).not.toHaveBeenCalled();
   });
 });

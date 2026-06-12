@@ -1,4 +1,5 @@
 import {
+  type StaffAssignableRole,
   staffListInputSchema,
   staffListOutputSchema,
   staffMemberCreateInputSchema,
@@ -18,7 +19,7 @@ import {
 
 import {
   createStaffMember,
-  getStaffMemberActiveRoles,
+  getStaffMemberRole,
   listStaffMembers,
   updateStaffMember
 } from "./queries";
@@ -31,10 +32,6 @@ const schoolStaffProcedure = protectedProcedure.errors({
   DUPLICATE_STAFF_RECORD: {
     message: "A staff record with the same unique fields already exists.",
     status: 409
-  },
-  INVALID_STAFF_DATES: {
-    message: "Staff date range is invalid.",
-    status: 400
   },
   ORGANIZATION_ACCESS_DENIED: {
     message: "You do not have access to the active organization.",
@@ -109,13 +106,13 @@ async function requireStaffManager(
 
 function assertCanManageRequestedRoles(
   permissions: StaffPermissions,
-  requestedRoles: Parameters<typeof canManageRequestedStaffRoles>[0]["requestedRoles"],
+  requestedRole: StaffAssignableRole,
   errors: SchoolStaffErrors
 ) {
   if (
     !canManageRequestedStaffRoles({
       canManagePrincipalRole: permissions.canManagePrincipalRole,
-      requestedRoles
+      requestedRoles: [requestedRole]
     })
   ) {
     throw errors.SCHOOL_PRINCIPAL_MANAGEMENT_DENIED();
@@ -124,12 +121,15 @@ function assertCanManageRequestedRoles(
 
 function assertCanManagePrincipalStaffUpdate(
   permissions: StaffPermissions,
-  currentRoles: Awaited<ReturnType<typeof getStaffMemberActiveRoles>>,
-  requestedRoles: Parameters<typeof canManageRequestedStaffRoles>[0]["requestedRoles"],
+  currentRole: Awaited<ReturnType<typeof getStaffMemberRole>>,
+  requestedRole: StaffAssignableRole | undefined,
   errors: SchoolStaffErrors
 ) {
-  const principalRoleInvolved =
-    currentRoles?.includes("principal") === true || requestedRoles?.includes("principal") === true;
+  if (currentRole === "owner") {
+    throw errors.SCHOOL_PRINCIPAL_MANAGEMENT_DENIED();
+  }
+
+  const principalRoleInvolved = currentRole === "principal" || requestedRole === "principal";
 
   if (principalRoleInvolved && !permissions.canManagePrincipalRole) {
     throw errors.SCHOOL_PRINCIPAL_MANAGEMENT_DENIED();
@@ -152,12 +152,8 @@ async function mapStaffWriteError<T>(action: () => Promise<T>, errors: SchoolSta
   try {
     return await action();
   } catch (error) {
-    if (hasDatabaseCode(error, "23505")) {
+    if (hasDatabaseCode(error, "23505") || hasDatabaseCode(error, "DUPLICATE_STAFF_RECORD")) {
       throw errors.DUPLICATE_STAFF_RECORD();
-    }
-
-    if (hasDatabaseCode(error, "23514")) {
-      throw errors.INVALID_STAFF_DATES();
     }
 
     throw error;
@@ -182,8 +178,11 @@ export const schoolStaffRouter = {
     .output(staffMemberSchema)
     .handler(async ({ context, errors, input }) => {
       const { organizationId, permissions } = await requireStaffManager(context, errors);
-      assertCanManageRequestedRoles(permissions, input.roles, errors);
-      return mapStaffWriteError(() => createStaffMember(organizationId, input), errors);
+      assertCanManageRequestedRoles(permissions, input.role, errors);
+      return mapStaffWriteError(
+        () => createStaffMember(organizationId, context.session.user.id, input),
+        errors
+      );
     }),
   list: schoolStaffProcedure
     .route({
@@ -210,8 +209,8 @@ export const schoolStaffRouter = {
     .output(staffMemberSchema)
     .handler(async ({ context, errors, input }) => {
       const { organizationId, permissions } = await requireStaffManager(context, errors);
-      const currentRoles = await getStaffMemberActiveRoles(organizationId, input.id);
-      assertCanManagePrincipalStaffUpdate(permissions, currentRoles, input.roles, errors);
+      const currentRole = await getStaffMemberRole(organizationId, input.id);
+      assertCanManagePrincipalStaffUpdate(permissions, currentRole, input.role, errors);
       const row = await mapStaffWriteError(() => updateStaffMember(organizationId, input), errors);
       return requireRow(row, errors);
     })

@@ -14,3 +14,7 @@ export function normalizeSchoolSlug(value: string): string {
 
   return slug ? `${slug}-school` : "school";
 }
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}

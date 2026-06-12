@@ -13,9 +13,27 @@ function queueDbResult(value: DbQueueValue) {
   dbQueue.push(value);
 }
 
+const tables = vi.hoisted(() => {
+  const table = (name: string, columns: string[]) =>
+    Object.fromEntries(columns.map((column) => [column, `${name}.${column}`]));
+
+  return {
+    invitation: table("invitation", [
+      "email",
+      "expiresAt",
+      "id",
+      "organizationId",
+      "schoolRole",
+      "status"
+    ]),
+    user: table("user", ["id"])
+  };
+});
+
 vi.mock("@tsu-stack/db", () => {
   const query = {
     from: vi.fn(() => query),
+    innerJoin: vi.fn(() => query),
     limit: vi.fn(() => Promise.resolve(dbQueue.shift())),
     select: vi.fn(() => query),
     where: vi.fn(() => query)
@@ -29,9 +47,17 @@ vi.mock("@tsu-stack/db", () => {
     db: query,
     eq: vi.fn((left: unknown, right: unknown) => {
       return { left, right, type: "eq" };
+    }),
+    inArray: vi.fn((column: unknown, values: unknown[]) => {
+      return { column, type: "inArray", values };
+    }),
+    isNotNull: vi.fn((column: unknown) => {
+      return { column, type: "isNotNull" };
     })
   };
 });
+
+vi.mock("@tsu-stack/db/schema", () => tables);
 
 vi.mock("@tsu-stack/env/server/env", () => {
   return {
@@ -75,7 +101,7 @@ describe("invitation signup gate", () => {
     await expect(canBootstrapRootUser("root@example.com")).resolves.toBe(false);
   });
 
-  it("rejects invitation signup when invitation email does not match", async () => {
+  it("rejects invitation signup when staff invitation email does not match", async () => {
     const { canSignUpWithInvitation } = await import("#@/invitation-signup-gate");
     queueDbResult([
       {
@@ -95,7 +121,19 @@ describe("invitation signup gate", () => {
     ).resolves.toBe(false);
   });
 
-  it("allows signup with matching pending invitation", async () => {
+  it("rejects signup for non-staff organization invitations", async () => {
+    const { canSignUpWithInvitation } = await import("#@/invitation-signup-gate");
+    queueDbResult([]);
+
+    await expect(
+      canSignUpWithInvitation({
+        email: " invited@example.com ",
+        invitationId: "invitation-1"
+      })
+    ).resolves.toBe(false);
+  });
+
+  it("allows signup with matching pending staff invitation", async () => {
     const { canSignUpWithInvitation } = await import("#@/invitation-signup-gate");
     queueDbResult([
       {

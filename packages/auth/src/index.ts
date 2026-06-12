@@ -10,7 +10,7 @@ import { db } from "@tsu-stack/db";
 import * as schema from "@tsu-stack/db/schema";
 import { ENV_SERVER } from "@tsu-stack/env/server/env";
 
-import { linkAcceptedInvitationToSchoolActor } from "./accepted-invitation-link";
+import { applyAcceptedStaffInvitationToMember } from "./accepted-invitation-link";
 import { invitationEmail, verificationEmail } from "./email";
 import { canBootstrapRootUser, canSignUpWithInvitation } from "./invitation-signup-gate";
 import { invitationIdHeader, signupIntentHeader } from "./signup-headers";
@@ -92,8 +92,8 @@ export const auth = betterAuth({
     organization({
       organizationHooks: {
         afterAcceptInvitation: async (data) => {
-          await linkAcceptedInvitationToSchoolActor({
-            invitationEmail: data.invitation.email,
+          await applyAcceptedStaffInvitationToMember({
+            invitationId: data.invitation.id,
             organizationId: data.organization.id,
             userId: data.user.id
           });
@@ -106,6 +106,28 @@ export const auth = betterAuth({
           to: data.email,
           url: `${ENV_SERVER.VITE_WEB_URL}/accept-invitation/${data.id}`
         });
+      },
+      schema: {
+        invitation: {
+          additionalFields: {
+            department: { type: "string", required: false, input: false },
+            employeeCode: { type: "string", required: false, input: false },
+            schoolRole: { type: "string", required: false, input: false },
+            staffStatus: { type: "string", required: false, input: false },
+            title: { type: "string", required: false, input: false }
+          }
+        },
+        member: {
+          additionalFields: {
+            deactivatedAt: { type: "date", required: false, input: false },
+            deactivationReason: { type: "string", required: false, input: false },
+            department: { type: "string", required: false, input: false },
+            employeeCode: { type: "string", required: false, input: false },
+            schoolRole: { type: "string", required: false, input: false },
+            staffStatus: { type: "string", required: false, input: false },
+            title: { type: "string", required: false, input: false }
+          }
+        }
       }
     }),
     openAPI({

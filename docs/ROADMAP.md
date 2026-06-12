@@ -43,7 +43,7 @@ Scope:
 Current implementation status:
 
 - Done: MVP schema modules, phase-owned migration, shared school contracts, school creation bootstrap with active-school selection, school switcher, and school setup CRUD for academic years, academic terms, grade levels, sections, and subjects.
-- Next: staff management for principals and teachers.
+- Next: Staff Directory for principal and teacher records, followed immediately by Staff Access for invitation/linking and real app access.
 - Then: student and guardian records, enrollment history, subject offerings, staff assignments, timetable, attendance, and basic transport assignment.
 
 Exit criteria:

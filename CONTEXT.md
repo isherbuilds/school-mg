@@ -20,6 +20,18 @@ _Avoid_: Super admin, owner
 Staff user responsible for assigned sections, subjects, attendance, timetable visibility, lesson logs, homework, and later marks.
 _Avoid_: Faculty, instructor
 
+**Staff Member**:
+Person who works for a school and has an email-addressed staff profile. MVP staff members need email because Staff Access depends on email invitations.
+_Avoid_: Employee account, app user
+
+**Staff Access**:
+School-scoped ability for a staff member to sign in and use the Staff App through a linked user account and access role.
+_Avoid_: Staff profile, directory record
+
+**Staff Invitation**:
+Pending invitation for a person to join a school with Staff Access.
+_Avoid_: Directory record, employment record
+
 **MVP**:
 First useful staff-side school operations release: academic setup, people records, permissions, timetable, and attendance before finance, parent portal, AI, chat, or external integrations.
 _Avoid_: Full school ERP, platform

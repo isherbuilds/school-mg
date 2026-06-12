@@ -5,14 +5,8 @@ import {
   type SchoolSummary,
   normalizeSchoolSlug
 } from "@tsu-stack/core/school";
-import { and, asc, db, eq } from "@tsu-stack/db";
-import {
-  member,
-  organization,
-  schoolActorRoles,
-  schoolActors,
-  session
-} from "@tsu-stack/db/schema";
+import { and, asc, db, eq, inArray, isNotNull } from "@tsu-stack/db";
+import { member, organization, session } from "@tsu-stack/db/schema";
 import { ENV_SERVER } from "@tsu-stack/env/server/env";
 
 function timestampToIso(value: Date | string): string {
@@ -40,6 +34,29 @@ const rolePriority: Record<SchoolSummary["role"], number> = {
   principal: 2,
   teacher: 1
 };
+
+function schoolSummariesFromRows(
+  rows: {
+    createdAt: Date | string;
+    id: string;
+    name: string;
+    role: SchoolSummary["role"] | null;
+    slug: string;
+  }[]
+) {
+  return rows.flatMap((row) => {
+    if (row.role === null) {
+      return [];
+    }
+
+    return [
+      organizationToSchoolSummary({
+        ...row,
+        role: row.role
+      })
+    ];
+  });
+}
 
 export async function canCreateSchoolForUser(email: string): Promise<boolean> {
   const bootstrapEmails = parseRootBootstrapEmails(ENV_SERVER.ROOT_BOOTSTRAP_EMAILS);
@@ -89,25 +106,9 @@ export async function createSchoolForUser(input: {
       id: crypto.randomUUID(),
       organizationId: org.id,
       role: "owner",
+      schoolRole: "owner",
+      staffStatus: "active",
       userId: input.userId
-    });
-
-    const [actor] = await tx
-      .insert(schoolActors)
-      .values({
-        email: input.email,
-        fullName: input.userName || input.email,
-        organizationId: org.id,
-        status: "active",
-        userId: input.userId
-      })
-      .returning();
-
-    await tx.insert(schoolActorRoles).values({
-      actorId: actor.id,
-      id: crypto.randomUUID(),
-      organizationId: org.id,
-      role: "owner"
     });
 
     await tx
@@ -136,31 +137,21 @@ export async function listSchoolsForUser(input: {
       createdAt: organization.createdAt,
       id: organization.id,
       name: organization.name,
-      role: schoolActorRoles.role,
+      role: member.schoolRole,
       slug: organization.slug
     })
     .from(member)
     .innerJoin(organization, eq(organization.id, member.organizationId))
-    .innerJoin(
-      schoolActors,
+    .where(
       and(
-        eq(schoolActors.organizationId, organization.id),
-        eq(schoolActors.status, "active"),
-        eq(schoolActors.userId, input.userId)
+        eq(member.userId, input.userId),
+        inArray(member.staffStatus, ["active", "on_leave"]),
+        isNotNull(member.schoolRole)
       )
     )
-    .innerJoin(
-      schoolActorRoles,
-      and(
-        eq(schoolActorRoles.organizationId, organization.id),
-        eq(schoolActorRoles.actorId, schoolActors.id),
-        eq(schoolActorRoles.active, true)
-      )
-    )
-    .where(eq(member.userId, input.userId))
     .orderBy(asc(organization.name));
 
-  const schools = dedupeSchoolSummaries(rows.map(organizationToSchoolSummary));
+  const schools = dedupeSchoolSummaries(schoolSummariesFromRows(rows));
   const isActiveSchoolAccessible = schools.some(
     (school) => school.id === input.activeOrganizationId
   );
@@ -181,30 +172,21 @@ async function getAccessibleSchoolForUser(input: {
       createdAt: organization.createdAt,
       id: organization.id,
       name: organization.name,
-      role: schoolActorRoles.role,
+      role: member.schoolRole,
       slug: organization.slug
     })
     .from(member)
     .innerJoin(organization, eq(organization.id, member.organizationId))
-    .innerJoin(
-      schoolActors,
+    .where(
       and(
-        eq(schoolActors.organizationId, organization.id),
-        eq(schoolActors.status, "active"),
-        eq(schoolActors.userId, input.userId)
+        eq(member.userId, input.userId),
+        eq(organization.id, input.organizationId),
+        inArray(member.staffStatus, ["active", "on_leave"]),
+        isNotNull(member.schoolRole)
       )
-    )
-    .innerJoin(
-      schoolActorRoles,
-      and(
-        eq(schoolActorRoles.organizationId, organization.id),
-        eq(schoolActorRoles.actorId, schoolActors.id),
-        eq(schoolActorRoles.active, true)
-      )
-    )
-    .where(and(eq(member.userId, input.userId), eq(organization.id, input.organizationId)));
+    );
 
-  return dedupeSchoolSummaries(rows.map(organizationToSchoolSummary))[0] ?? null;
+  return dedupeSchoolSummaries(schoolSummariesFromRows(rows))[0] ?? null;
 }
 
 export async function getActiveSchoolIdForSession(sessionId: string): Promise<string | null> {

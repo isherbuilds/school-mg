@@ -1,8 +1,10 @@
 import "@tanstack/react-start/server-only";
 
-import { and, count, db, eq } from "@tsu-stack/db";
+import { and, count, db, eq, inArray, isNotNull } from "@tsu-stack/db";
 import { invitation, user } from "@tsu-stack/db/schema";
 import { ENV_SERVER } from "@tsu-stack/env/server/env";
+
+const staffAssignableRoles = ["principal", "teacher"] as const;
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -37,11 +39,24 @@ export async function canBootstrapRootUser(email: string): Promise<boolean> {
   return (await countUsers()) === 0;
 }
 
-export async function findInvitationById(id: string) {
+export async function findStaffInvitationById(id: string) {
   const [row] = await db
-    .select()
+    .select({
+      email: invitation.email,
+      expiresAt: invitation.expiresAt,
+      id: invitation.id,
+      organizationId: invitation.organizationId,
+      status: invitation.status
+    })
     .from(invitation)
-    .where(and(eq(invitation.id, id), eq(invitation.status, "pending")))
+    .where(
+      and(
+        eq(invitation.id, id),
+        eq(invitation.status, "pending"),
+        isNotNull(invitation.schoolRole),
+        inArray(invitation.schoolRole, [...staffAssignableRoles])
+      )
+    )
     .limit(1);
 
   return row ?? null;
@@ -51,7 +66,7 @@ export async function canSignUpWithInvitation(input: {
   email: string;
   invitationId: string;
 }): Promise<boolean> {
-  const invite = await findInvitationById(input.invitationId);
+  const invite = await findStaffInvitationById(input.invitationId);
 
   if (!invite) {
     return false;

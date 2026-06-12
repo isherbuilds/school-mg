@@ -239,8 +239,7 @@ describe("school domain contracts", () => {
   it("requires staff create inputs to include email", () => {
     expect(() =>
       staffMemberCreateInputSchema.parse({
-        employeeCode: "T-100",
-        fullName: "Asha Rao"
+        employeeCode: "T-100"
       })
     ).toThrow("Invalid input");
   });
@@ -250,8 +249,7 @@ describe("school domain contracts", () => {
       staffMemberCreateInputSchema.parse({
         department: "a".repeat(121),
         email: "asha.rao@example.com",
-        employeeCode: "T-100",
-        fullName: "Asha Rao"
+        employeeCode: "T-100"
       })
     ).toThrow("Too big");
   });
@@ -259,18 +257,15 @@ describe("school domain contracts", () => {
   it("serializes pending teacher staff member transport records", () => {
     const staffMember = {
       accessStatus: "pending",
-      actorId: "018f3ad5-8af8-733f-bb74-33f7f224f128",
       createdAt: "2026-06-11T00:00:00.000Z",
       department: null,
       email: "asha.rao@example.com",
       employeeCode: "T-100",
-      fullName: "Asha Rao",
-      id: "018f3ad5-8af8-733f-bb74-33f7f224f126",
-      invitationId: null,
-      joinedOn: "2026-06-01",
-      leftOn: null,
-      phone: null,
-      roles: ["teacher"],
+      fullName: null,
+      id: "invitation-1",
+      invitationId: "invitation-1",
+      memberId: null,
+      role: "teacher",
       status: "active",
       title: null,
       updatedAt: "2026-06-11T00:00:00.000Z",
@@ -280,29 +275,29 @@ describe("school domain contracts", () => {
     expect(staffMemberSchema.parse(staffMember)).toEqual(staffMember);
   });
 
-  it("validates staff access grant and revoke inputs by staff profile id", () => {
+  it("validates staff access grant and revoke inputs by staff member id", () => {
     const input = {
-      staffProfileId: "018f3ad5-8af8-733f-bb74-33f7f224f126"
+      staffMemberId: "member-1"
     };
 
     expect(staffAccessGrantInputSchema.parse(input)).toEqual(input);
     expect(staffAccessRevokeInputSchema.parse(input)).toEqual(input);
     expect(() =>
       staffAccessGrantInputSchema.parse({
-        staffProfileId: "not-a-uuid"
+        staffMemberId: ""
       })
-    ).toThrow("Invalid UUID");
+    ).toThrow("Too small");
     expect(() =>
       staffAccessRevokeInputSchema.parse({
-        staffProfileId: "not-a-uuid"
+        staffMemberId: ""
       })
-    ).toThrow("Invalid UUID");
+    ).toThrow("Too small");
   });
 
   it("rejects id-only staff member updates", () => {
     expect(() =>
       staffMemberUpdateInputSchema.parse({
-        id: "018f3ad5-8af8-733f-bb74-33f7f224f126"
+        id: "member-1"
       })
     ).toThrow("At least one field must be provided.");
   });
@@ -311,9 +306,21 @@ describe("school domain contracts", () => {
     expect(() =>
       staffMemberUpdateInputSchema.parse({
         department: "a".repeat(121),
-        id: "018f3ad5-8af8-733f-bb74-33f7f224f126"
+        id: "member-1"
       })
     ).toThrow("Too big");
+  });
+
+  it("accepts opaque staff member ids for updates", () => {
+    expect(
+      staffMemberUpdateInputSchema.parse({
+        id: "member-1",
+        title: "Teacher"
+      })
+    ).toEqual({
+      id: "member-1",
+      title: "Teacher"
+    });
   });
 
   it("requires academic year date updates to include both bounds", () => {

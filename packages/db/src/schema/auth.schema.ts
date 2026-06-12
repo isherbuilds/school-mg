@@ -1,6 +1,8 @@
 import { defineRelationsPart, sql } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
+import { schoolAccessRoleEnum, staffStatusEnum } from "#@/schema/school.shared";
+
 export const user = pgTable("user", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   email: text("email").notNull().unique(),
@@ -91,18 +93,34 @@ export const member = pgTable(
   "member",
   {
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    deactivatedAt: timestamp("deactivated_at"),
+    deactivationReason: text("deactivation_reason"),
+    department: text("department"),
+    employeeCode: text("employee_code"),
     id: text("id").primaryKey(),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     role: text("role").default("member").notNull(),
+    schoolRole: schoolAccessRoleEnum("school_role"),
+    staffStatus: staffStatusEnum("staff_status").default("active").notNull(),
+    title: text("title"),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" })
   },
   (table) => [
     index("member_organizationId_idx").on(table.organizationId),
+    index("member_school_access_idx").on(table.organizationId, table.schoolRole, table.staffStatus),
     index("member_userId_idx").on(table.userId),
+    uniqueIndex("member_employee_code_uidx")
+      .on(table.organizationId, table.employeeCode)
+      .where(sql`${table.employeeCode} IS NOT NULL`),
+    uniqueIndex("member_org_id_uidx").on(table.organizationId, table.id),
     uniqueIndex("member_org_user_uidx").on(table.organizationId, table.userId)
   ]
 );
@@ -111,7 +129,9 @@ export const invitation = pgTable(
   "invitation",
   {
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    department: text("department"),
     email: text("email").notNull(),
+    employeeCode: text("employee_code"),
     expiresAt: timestamp("expires_at").notNull(),
     id: text("id").primaryKey(),
     inviterId: text("inviter_id")
@@ -121,11 +141,15 @@ export const invitation = pgTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     role: text("role"),
-    status: text("status").default("pending").notNull()
+    schoolRole: schoolAccessRoleEnum("school_role"),
+    staffStatus: staffStatusEnum("staff_status").default("active").notNull(),
+    status: text("status").default("pending").notNull(),
+    title: text("title")
   },
   (table) => [
     index("invitation_email_idx").on(table.email),
     index("invitation_organizationId_idx").on(table.organizationId),
+    index("invitation_school_access_idx").on(table.organizationId, table.schoolRole, table.status),
     uniqueIndex("invitation_pending_email_uidx")
       .on(table.organizationId, sql`lower(trim(${table.email}))`)
       .where(sql`${table.status} = 'pending'`)

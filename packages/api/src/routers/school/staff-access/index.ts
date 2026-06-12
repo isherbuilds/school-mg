@@ -17,10 +17,10 @@ import {
 
 import {
   createOrResendStaffInvitation,
-  getStaffProfileForAccess,
+  getStaffMemberForAccess,
   previewStaffInvitation,
   revokeStaffAccess,
-  type StaffProfileForAccess
+  type StaffMemberForAccess
 } from "./queries";
 
 const staffAccessErrors = {
@@ -113,30 +113,30 @@ async function requireStaffManager(
   };
 }
 
-async function requireStaffProfileForAccess(
+async function requireStaffMemberForAccess(
   organizationId: string,
-  staffProfileId: string,
+  staffMemberId: string,
   errors: SchoolStaffAccessErrors
-): Promise<StaffProfileForAccess> {
-  const staffProfile = await getStaffProfileForAccess(organizationId, staffProfileId);
+): Promise<StaffMemberForAccess> {
+  const staffMember = await getStaffMemberForAccess(organizationId, staffMemberId);
 
-  if (!staffProfile) {
+  if (!staffMember) {
     throw errors.STAFF_RECORD_NOT_FOUND();
   }
 
-  return staffProfile;
+  return staffMember;
 }
 
 function assertCanManageTargetStaff(
   permissions: StaffPermissions,
-  staffProfile: StaffProfileForAccess,
+  staffMember: StaffMemberForAccess,
   errors: SchoolStaffAccessErrors
 ) {
-  if (staffProfile.roles.includes("owner")) {
+  if (staffMember.role === "owner") {
     throw errors.SCHOOL_PRINCIPAL_MANAGEMENT_DENIED();
   }
 
-  if (staffProfile.roles.includes("principal") && !permissions.canManagePrincipalRole) {
+  if (staffMember.role === "principal" && !permissions.canManagePrincipalRole) {
     throw errors.SCHOOL_PRINCIPAL_MANAGEMENT_DENIED();
   }
 }
@@ -151,26 +151,26 @@ export const schoolStaffAccessRouter = {
     .output(staffMemberSchema)
     .handler(async ({ context, errors, input }) => {
       const { organizationId, permissions } = await requireStaffManager(context, errors);
-      const staffProfile = await requireStaffProfileForAccess(
+      const staffMember = await requireStaffMemberForAccess(
         organizationId,
-        input.staffProfileId,
+        input.staffMemberId,
         errors
       );
 
-      assertCanManageTargetStaff(permissions, staffProfile, errors);
+      assertCanManageTargetStaff(permissions, staffMember, errors);
 
-      if (!staffProfile.email) {
+      if (!staffMember.email) {
         throw errors.STAFF_WITHOUT_EMAIL_NOT_ALLOWED();
       }
 
-      if (staffProfile.hasLinkedAccess) {
+      if (staffMember.hasLinkedAccess) {
         throw errors.STAFF_ACCESS_ALREADY_LINKED();
       }
 
       return createOrResendStaffInvitation({
         inviterId: context.session.user.id,
         organizationId,
-        staffProfileId: input.staffProfileId
+        staffMemberId: input.staffMemberId
       });
     }),
   preview: schoolStaffInvitationPreviewProcedure
@@ -204,17 +204,17 @@ export const schoolStaffAccessRouter = {
     .output(staffMemberSchema)
     .handler(async ({ context, errors, input }) => {
       const { organizationId, permissions } = await requireStaffManager(context, errors);
-      const staffProfile = await requireStaffProfileForAccess(
+      const staffMember = await requireStaffMemberForAccess(
         organizationId,
-        input.staffProfileId,
+        input.staffMemberId,
         errors
       );
 
-      assertCanManageTargetStaff(permissions, staffProfile, errors);
+      assertCanManageTargetStaff(permissions, staffMember, errors);
 
       return revokeStaffAccess({
         organizationId,
-        staffProfileId: input.staffProfileId
+        staffMemberId: input.staffMemberId
       });
     })
 };

@@ -1,6 +1,8 @@
 export const schoolAccessRoles = ["owner", "principal", "teacher"] as const;
 
-export const schoolActorStatuses = ["invited", "active", "suspended", "archived"] as const;
+export const staffAssignableRoles = ["principal", "teacher"] as const;
+
+export const defaultStaffAssignableRoles = ["teacher"] as const;
 
 export const staffStatuses = ["active", "on_leave", "inactive"] as const;
 

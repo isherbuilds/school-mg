@@ -7,7 +7,6 @@ import {
   enrollmentStatuses,
   guardianStatuses,
   schoolAccessRoles,
-  schoolActorStatuses,
   schoolShifts,
   staffAssignmentRoles,
   staffStatuses,
@@ -20,7 +19,6 @@ import {
 } from "@tsu-stack/core/school";
 
 export const schoolAccessRoleEnum = pgEnum("school_access_role", schoolAccessRoles);
-export const schoolActorStatusEnum = pgEnum("school_actor_status", schoolActorStatuses);
 export const staffStatusEnum = pgEnum("staff_status", staffStatuses);
 export const guardianStatusEnum = pgEnum("guardian_status", guardianStatuses);
 export const studentStatusEnum = pgEnum("student_status", studentStatuses);
