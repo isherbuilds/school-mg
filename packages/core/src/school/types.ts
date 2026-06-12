@@ -119,6 +119,112 @@ export const schoolBootstrapListOutputSchema = z.object({
 });
 export type SchoolBootstrapListOutput = z.infer<typeof schoolBootstrapListOutputSchema>;
 
+export const staffAssignableRoleSchema = z.enum(["principal", "teacher"]);
+export type StaffAssignableRole = z.infer<typeof staffAssignableRoleSchema>;
+
+export const staffAccessStatusSchema = z.enum(["not_invited", "pending", "linked", "revoked"]);
+export type StaffAccessStatus = z.infer<typeof staffAccessStatusSchema>;
+
+export const staffMemberSchema = z.object({
+  accessStatus: staffAccessStatusSchema,
+  actorId: uuidSchema,
+  createdAt: z.iso.datetime(),
+  department: z.string().nullable(),
+  email: z.email(),
+  employeeCode: nonEmptyTextSchema,
+  fullName: nonEmptyTextSchema,
+  id: uuidSchema,
+  invitationId: z.string().nullable(),
+  joinedOn: isoDateSchema.nullable(),
+  leftOn: isoDateSchema.nullable(),
+  phone: z.string().nullable(),
+  roles: z.array(staffAssignableRoleSchema),
+  status: staffStatusSchema,
+  title: z.string().nullable(),
+  updatedAt: z.iso.datetime(),
+  userId: z.string().nullable()
+});
+export type StaffMember = z.infer<typeof staffMemberSchema>;
+
+const staffMemberInputBaseSchema = z.object({
+  department: nonEmptyTextSchema.max(120).nullable().optional(),
+  email: z.email(),
+  employeeCode: nonEmptyTextSchema.max(80),
+  fullName: nonEmptyTextSchema.max(160),
+  joinedOn: isoDateSchema.nullable().optional(),
+  leftOn: isoDateSchema.nullable().optional(),
+  phone: nonEmptyTextSchema.max(40).nullable().optional(),
+  roles: z.array(staffAssignableRoleSchema).min(1),
+  status: staffStatusSchema,
+  title: nonEmptyTextSchema.max(120).nullable().optional()
+});
+
+export const staffMemberCreateInputSchema = staffMemberInputBaseSchema
+  .extend({
+    roles: z.array(staffAssignableRoleSchema).min(1).default(["teacher"]),
+    status: staffStatusSchema.default("active")
+  })
+  .refine(
+    (input) => input.joinedOn == null || input.leftOn == null || input.joinedOn <= input.leftOn,
+    {
+      message: "Joined date must be before or equal to left date.",
+      path: ["leftOn"]
+    }
+  );
+export type StaffMemberCreateInput = z.infer<typeof staffMemberCreateInputSchema>;
+
+export const staffMemberUpdateInputSchema = staffMemberInputBaseSchema
+  .partial()
+  .extend({
+    id: uuidSchema
+  })
+  .refine(hasUpdateFields, {
+    message: "At least one field must be provided.",
+    path: ["id"]
+  })
+  .refine(
+    (input) => input.joinedOn == null || input.leftOn == null || input.joinedOn <= input.leftOn,
+    {
+      message: "Joined date must be before or equal to left date.",
+      path: ["leftOn"]
+    }
+  );
+export type StaffMemberUpdateInput = z.infer<typeof staffMemberUpdateInputSchema>;
+
+export const staffListInputSchema = z.object({});
+export type StaffListInput = z.infer<typeof staffListInputSchema>;
+
+export const staffListOutputSchema = z.object({
+  canManagePrincipalRole: z.boolean(),
+  canManageStaff: z.boolean(),
+  staff: z.array(staffMemberSchema)
+});
+export type StaffListOutput = z.infer<typeof staffListOutputSchema>;
+
+export const staffAccessGrantInputSchema = z.object({
+  staffProfileId: uuidSchema
+});
+export type StaffAccessGrantInput = z.infer<typeof staffAccessGrantInputSchema>;
+
+export const staffAccessRevokeInputSchema = z.object({
+  staffProfileId: uuidSchema
+});
+export type StaffAccessRevokeInput = z.infer<typeof staffAccessRevokeInputSchema>;
+
+export const staffInvitationPreviewInputSchema = z.object({
+  invitationId: z.string().min(1)
+});
+export type StaffInvitationPreviewInput = z.infer<typeof staffInvitationPreviewInputSchema>;
+
+export const staffInvitationPreviewSchema = z.object({
+  email: z.email(),
+  expiresAt: z.iso.datetime(),
+  invitationId: z.string(),
+  organizationName: nonEmptyTextSchema,
+  status: z.enum(["pending", "accepted", "rejected", "canceled", "expired"])
+});
+export type StaffInvitationPreview = z.infer<typeof staffInvitationPreviewSchema>;
+
 export const academicYearSchema = z.object({
   createdAt: z.iso.datetime(),
   endDate: isoDateSchema,
