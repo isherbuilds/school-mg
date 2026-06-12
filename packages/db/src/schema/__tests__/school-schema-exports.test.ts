@@ -142,6 +142,19 @@ describe("school schema exports", () => {
     expect(migration).toContain("attendance_records_marked_by_member_org_fk");
   });
 
+  it("backfills staff assignment member ids before enforcing required member scope", () => {
+    const migration = readMemberCentricStaffMigration();
+
+    expect(migration).toContain('ALTER TABLE "staff_assignments" ADD COLUMN "member_id" text;');
+    expect(migration).toContain('UPDATE "staff_assignments"');
+    expect(migration).toContain(
+      'ALTER TABLE "staff_assignments" ALTER COLUMN "member_id" SET NOT NULL'
+    );
+    expect(migration).not.toContain(
+      'ALTER TABLE "staff_assignments" ADD COLUMN "member_id" text NOT NULL'
+    );
+  });
+
   it("keeps staff lifecycle fields off the auth member and invitation rows", () => {
     const migration = readMemberCentricStaffMigration();
 

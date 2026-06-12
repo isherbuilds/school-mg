@@ -52,7 +52,9 @@ export async function sendTransactionalEmail(input: TransactionalEmailInput): Pr
 
   if (!config) {
     console.debug("[auth-email:dev]", {
+      html: input.html,
       subject: input.subject,
+      text: input.text,
       to: input.to
     });
     return;

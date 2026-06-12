@@ -44,7 +44,7 @@ app.use(
       signupIntentHeader,
       invitationIdHeader
     ],
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
     credentials: true,
     origin: [new URL(ENV_SERVER.VITE_WEB_URL).origin]
   })
