@@ -367,7 +367,7 @@ describe("staff access query helpers", () => {
     ]);
   });
 
-  it("revokes staff access without deleting staff profile or actor records", async () => {
+  it("revokes app access without deleting staff profile, actor, or role assignment records", async () => {
     mocks.dbSelectResults.push([staffProfileRow], [{ role: "teacher" }], [{ id: "member-1" }]);
     mocks.txSelectResults.push([{ id: "pending-invitation-1" }]);
     mocks.listStaffMembers.mockResolvedValue([
@@ -396,16 +396,13 @@ describe("staff access query helpers", () => {
         values: { status: "canceled" }
       },
       {
-        table: "school_actor_roles",
-        values: { active: false }
-      },
-      {
         table: "session",
         values: { activeOrganizationId: null }
       }
     ]);
     expect(mocks.deleteCalls).toEqual([{ table: "member" }]);
     expect(mocks.updateCalls.map((call) => call.table)).not.toContain("school_actors");
+    expect(mocks.updateCalls.map((call) => call.table)).not.toContain("school_actor_roles");
     expect(mocks.updateCalls.map((call) => call.table)).not.toContain("staff_profiles");
     expect(mocks.deleteCalls.map((call) => call.table)).not.toContain("school_actors");
     expect(mocks.deleteCalls.map((call) => call.table)).not.toContain("staff_profiles");

@@ -6,11 +6,11 @@ import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { openAPI, organization } from "better-auth/plugins";
 
-import { and, eq } from "@tsu-stack/db";
 import { db } from "@tsu-stack/db";
 import * as schema from "@tsu-stack/db/schema";
 import { ENV_SERVER } from "@tsu-stack/env/server/env";
 
+import { linkAcceptedInvitationToSchoolActor } from "./accepted-invitation-link";
 import { invitationEmail, verificationEmail } from "./email";
 import { canBootstrapRootUser, canSignUpWithInvitation } from "./invitation-signup-gate";
 import { invitationIdHeader, signupIntentHeader } from "./signup-headers";
@@ -92,19 +92,11 @@ export const auth = betterAuth({
     organization({
       organizationHooks: {
         afterAcceptInvitation: async (data) => {
-          await db
-            .update(schema.schoolActors)
-            .set({
-              status: "active",
-              updatedAt: new Date(),
-              userId: data.user.id
-            })
-            .where(
-              and(
-                eq(schema.schoolActors.organizationId, data.organization.id),
-                eq(schema.schoolActors.email, data.invitation.email)
-              )
-            );
+          await linkAcceptedInvitationToSchoolActor({
+            invitationEmail: data.invitation.email,
+            organizationId: data.organization.id,
+            userId: data.user.id
+          });
         }
       },
       requireEmailVerificationOnInvitation: true,

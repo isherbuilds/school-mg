@@ -405,17 +405,6 @@ export async function revokeStaffAccess(input: {
       );
     }
 
-    await tx
-      .update(schoolActorRoles)
-      .set({ active: false })
-      .where(
-        and(
-          eq(schoolActorRoles.organizationId, input.organizationId),
-          eq(schoolActorRoles.actorId, staffProfile.actorId),
-          inArray(schoolActorRoles.role, staffManageableRoles)
-        )
-      );
-
     if (!staffProfile.userId) {
       return;
     }

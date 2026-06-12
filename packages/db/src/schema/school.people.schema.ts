@@ -43,7 +43,10 @@ export const schoolActors = pgTable(
   (table) => [
     index("school_actors_organization_idx").on(table.organizationId),
     index("school_actors_user_idx").on(table.userId),
-    uniqueIndex("school_actors_email_uidx").on(table.organizationId, table.email),
+    uniqueIndex("school_actors_email_uidx").on(
+      table.organizationId,
+      sql`lower(trim(${table.email}))`
+    ),
     uniqueIndex("school_actors_org_id_uidx").on(table.organizationId, table.id),
     uniqueIndex("school_actors_user_uidx").on(table.organizationId, table.userId)
   ]

@@ -316,7 +316,7 @@ export async function createStaffMember(
     const [actor] = await tx
       .insert(schoolActors)
       .values({
-        email: input.email,
+        email: normalizeEmail(input.email),
         fullName: input.fullName,
         organizationId,
         phone: input.phone ?? null,
@@ -372,7 +372,7 @@ export async function updateStaffMember(
     }
 
     const actorValues = {
-      email: input.email,
+      email: input.email === undefined ? undefined : normalizeEmail(input.email),
       fullName: input.fullName,
       phone: input.phone,
       status: input.status === undefined ? undefined : actorStatusFromStaffStatus(input.status)
