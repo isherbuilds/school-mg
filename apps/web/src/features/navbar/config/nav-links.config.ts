@@ -16,8 +16,16 @@ export const navLinks: NavbarLink[] = [
     to: "/dashboard"
   },
   {
+    label: m.navbar__invitations(),
+    to: "/invitations"
+  },
+  {
     label: m.navbar__school_setup(),
     to: "/school-setup"
+  },
+  {
+    label: m.navbar__staff(),
+    to: "/staff"
   },
   {
     href: `${ENV_WEB_ISOMORPHIC.VITE_SERVER_URL}/docs`,
