@@ -5,7 +5,8 @@ import { generateAppSeo } from "@/shared/lib/seo";
 import { StaffPage, getStaffQueryOptions } from "@/pages/staff";
 
 export const Route = createFileRoute("/{-$locale}/(root-layout)/(auth)/staff/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(getStaffQueryOptions()),
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(getStaffQueryOptions()).catch(() => undefined),
   head: ({ params }) =>
     generateAppSeo({
       alternates: {
